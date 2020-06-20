@@ -1,0 +1,24 @@
+{
+  "name": "new-discord",
+  "productName": "new-discord",
+  "platform": "win32",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "electron app.js",
+    "build": "electron-packager . --overwrite",
+    "export": "node export.js"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "9.0.0",
+    "electron-wix-msi": "^2.2.0",
+    "nodemon": "^1.19.4",
+    "typescript": "^3.7.2"
+  },
+  "dependencies": {
+    "rtcpeerconnection": "^8.4.0",
+    "socket.io": "^2.3.0",
+    "update-electron-app": "^1.5.0"
+  }
+}

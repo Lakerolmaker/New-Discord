@@ -1,0 +1,14 @@
+{
+  "name": "p2p",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "homepage": "https://github.com/tomcartwrightuk/socket.io-p2p-server",
+  "dependencies": {
+    "ecstatic": "^4.1.4",
+    "socket.io": "^2.3.0",
+    "socket.io-p2p-server": "^1.2.0"
+  }
+}
