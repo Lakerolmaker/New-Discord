@@ -7,9 +7,9 @@ const path = require('path');
 // 2. Define input and output directory.
 // Important: the directories must be absolute, not relative e.g
 // appDirectory: "C:\\Users\sdkca\Desktop\OurCodeWorld-win32-x64",
-const APP_DIR = path.resolve(__dirname, './new-discord-win32-x64');
+const APP_DIR = path.resolve(__dirname, './dist/NewDiscord-win32-x64');
 // outputDirectory: "C:\\Users\sdkca\Desktop\windows_installer",
-const OUT_DIR = path.resolve(__dirname, './windows_installer');
+const OUT_DIR = path.resolve(__dirname, './dist/windows_installer');
 
 // 3. Instantiate the MSICreator
 const msiCreator = new MSICreator({
@@ -18,10 +18,10 @@ const msiCreator = new MSICreator({
 
     // Configure metadata
     description: 'Discord can suck dees nuts',
-    exe: 'new-discord',
-    name: 'New Discord',
-    manufacturer: 'Jacobs sweaty fingies',
-    version: '1.0.0',
+    exe: 'NewDiscord.exe',
+    name: 'NewDiscord',
+    manufacturer: 'Lakerolmaker',
+    version: '0.0.4',
 
     // Configure installer User Interface
     ui: {
