@@ -28,7 +28,17 @@
   background-color: #4c4c4c;
 }
 
-#settings_div{
-  background-color: #f8f9fa;
+#settings_page{
+  background-color: #313335;
   display: none;
+}
+
+#settings_div{
+  width: 50%;
+padding: 50px;
+}
+
+
+#upload_avatar{
+  background-color: #4e4e4e;
 }

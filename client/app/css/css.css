@@ -87,7 +87,7 @@ body {
 
 .message_body {
   height: auto;
-  min-height: 100px;
+  min-height: 90px;
 }
 
 .message_displayname {
@@ -99,7 +99,7 @@ body {
 
 .message_content {
   position: absolute;
-  top: 35px;
+  top: 30px;
   left: 65px;
 }
 
@@ -109,6 +109,11 @@ body {
   height: 40px;
   border-radius: 50%;
   overflow: hidden;
+}
+
+.small_avatar{
+  padding: 5px;
+    margin: 4px;
 }
 
 .active-users-panel {

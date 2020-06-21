@@ -17,19 +17,20 @@ console.log("Peerjs sevrer running on port : " + peerjs_port),
 
     socket.on('send-username', data => {
 
+      console.log("")
       console.log("--------- New connection ---------")
-      console.log("Username : " + data.username )
+      console.log("Username : " + data.user.display_name)
       console.log("peer_id  : " + data.peer_id)
       console.log("----------------------------------")
 
-      socket.username = data.username;
+      socket.user = data.user;
       socket.peer_id = data.peer_id
 
       let socket_ids = activeSockets.map(function(a) {
         return a.id;
       });
-      let usernames = activeSockets.map(function(a) {
-        return a.username;
+      let users = activeSockets.map(function(a) {
+        return a.user;
       });
 
       let peer_ids = activeSockets.map(function(a) {
@@ -39,7 +40,7 @@ console.log("Peerjs sevrer running on port : " + peerjs_port),
       socket.emit("update-user-list", {
         socket_ids: socket_ids,
         peer_ids: [peer_ids],
-        usernames: usernames
+        users: users
       });
 
       activeSockets.push(socket);
@@ -47,7 +48,7 @@ console.log("Peerjs sevrer running on port : " + peerjs_port),
       socket.broadcast.emit("update-user-list", {
         socket_ids: [socket.id],
         peer_ids: [socket.peer_id],
-        usernames: [socket.username]
+        users: [socket.user]
       });
 
     });
@@ -77,7 +78,7 @@ console.log("Peerjs sevrer running on port : " + peerjs_port),
 
     socket.on("send-message", data => {
       socket.broadcast.emit("send-message", {
-        username: socket.username,
+        user: socket.user,
         message: data.message
       });
     });

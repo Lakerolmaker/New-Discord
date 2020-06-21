@@ -4,16 +4,34 @@ const {
   ipcMain
 } = require('electron') // http://electronjs.org/docs/api
 const path = require('path') // https://nodejs.org/api/path.html
+const fs = require('fs');
 const url = require('url') // https://nodejs.org/api/url.html
-
 const io = require('socket.io')
 const showDialog = require('./js/show-dialog');
 const Store = require('./js/store.js');
+const imgur = require('imgur');
 
-const {autoUpdater} = require("electron-updater");
+
+const {
+  autoUpdater
+} = require("electron-updater");
+
+const isDev = require('electron-is-dev');
+
+if (isDev) {
+  console.log('Running in development');
+} else {
+  console.log('Running in production');
+}
 
 
 console.log("Hewwo Uwu")
+
+let rawdata = fs.readFileSync('apiKeys.json');
+let apiKeys = JSON.parse(rawdata);
+
+imgur.setClientId(apiKeys.imgur);
+
 
 
 // First instantiate the class
@@ -71,11 +89,12 @@ app.once('ready', () => {
     slashes: true
   }))
 
-
-  window.openDevTools({
-    mode: 'right'
-  });
-
+  //: opens the console if it run in development
+  if (isDev) {
+    window.openDevTools({
+      mode: 'right'
+    });
+  }
 
   // Show window when page is ready
   window.once('ready-to-show', () => {
@@ -103,8 +122,23 @@ app.once('ready', () => {
     store.set('display_name', arg);
   });
 
-  ipcMain.on('get_display_name', (event, arg) => {
-    event.reply('recive_display_name', store.get("display_name"))
+  ipcMain.on('get_user_info', (event, arg) => {
+    let user = {};
+    user.display_name = store.get("display_name")
+    user.avatar_url = store.get("avatar_url")
+    event.reply('recive_user_info', user)
   })
+
+  ipcMain.on('upload_image', (event, arg) => {
+    imgur.uploadFile(arg)
+      .then(function(json) {
+        store.set('avatar_url', json.data.link);
+        event.reply("get_avatar_url", json.data.link)
+      })
+      .catch(function(err) {
+        console.error(err.message);
+      });
+
+  });
 
 })

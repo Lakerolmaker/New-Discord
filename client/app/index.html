@@ -23,6 +23,7 @@
   <script src="toast/jquery.toast.min.js"></script>
 
   <script src="js/window.js"></script>
+  <script src="js/settings.js"></script>
 </head>
 
 
@@ -35,7 +36,7 @@
       </div>
 
       <ul class="list-unstyled components">
-        <p>V0.0.7</p>
+        <p>V0.0.8</p>
         <li class="active">
           <a href="#userlist" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Active Users</a>
           <ul class="collapse list-unstyled" id="userlist">
@@ -92,15 +93,27 @@
   </div>
 
 
-  <div id="settings_div" class="w-75 h-75">
+  <div id="settings_page" class="w-100 h-100">
     <button id="back_btn" class="setting_btn rounded"><i class="fa fa-close"></i></button>
-    <p class="h2">Display Name</p>
-    <div class="input-group mb-3">
-      <div class="input-group-prepend">
-        <span class="input-group-text" id="inputGroup-sizing-default">Default</span>
+
+    <div id="settings_div">
+      <p class="h2">Settings</p>
+      <br>
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="inputGroup-sizing-default">Display name</span>
+        </div>
+        <input id="settings_displayname" type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
       </div>
-      <input type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+
+      <br>
+
+      <p class="h4">Avatar / Profile picture</p>
+      <input type="file" accept="image/*" class="rounded form-control-file" id="upload_avatar">
+
+
     </div>
+
   </div>
 
 
