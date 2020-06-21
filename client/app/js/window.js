@@ -1,5 +1,7 @@
-var peer = new Peer({
-  debug: 2
+const peer = new Peer({
+  host: '81.230.72.203',
+  port: 3001,
+  path: '/myapp'
 });
 
 var localStream;
@@ -17,26 +19,19 @@ function unselectUsersFromList() {
 }
 
 function createUserItemContainer(data, i) {
-  const userContainerEl = document.createElement("div");
 
+  $el = $('<li class="user_element"></li>')
+  $el.attr('id', data.socket_ids[i]);
 
-  const usernameEl = document.createElement("p");
-
-  userContainerEl.setAttribute("class", "active-user");
-  userContainerEl.setAttribute("id", data.socket_ids[i]);
-  usernameEl.setAttribute("class", "username");
-  usernameEl.setAttribute("class", "h4");
-  usernameEl.innerHTML = `${data.usernames[i]}`;
-
-  userContainerEl.appendChild(usernameEl);
-
-  userContainerEl.addEventListener("click", () => {
-    unselectUsersFromList();
-    userContainerEl.setAttribute("class", "active-user active-user--selected");
+  $a = $('<a href="#">' + data.usernames[i] + '</a>')
+  $a.on('click', ev => {
     callUser(data.peer_ids[i]);
-  });
+  })
 
-  return userContainerEl;
+  $el.append($a)
+
+  $("#userlist").append($el)
+  return $el;
 }
 
 function createMessageItem(displayname, message_content) {
@@ -78,14 +73,14 @@ function callUser(peer_id) {
 
 }
 
+
 function updateUserList(data) {
-  const activeUserContainer = document.getElementById("active-user-container");
+  const activeUserContainer = document.getElementById("userlist");
 
   data.socket_ids.forEach(function(socketId, i) {
     const alreadyExistingUser = document.getElementById(socketId);
     if (!alreadyExistingUser && data.socket_ids[0].lenght != 0) {
-      const userContainerEl = createUserItemContainer(data, i);
-      activeUserContainer.appendChild(userContainerEl);
+      createUserItemContainer(data, i);
     }
   });
 
@@ -95,14 +90,14 @@ function toast(heading, text) {
 
 
   $.toast({
-      text: text, // Text that is to be shown in the toast
-      heading: heading, // Optional heading to be shown on the toast
-      showHideTransition: 'fade', // fade, slide or plain
-      allowToastClose: true, // Boolean value true or false
-      hideAfter: 3000, // false to make it sticky or number representing the miliseconds as time after which toast needs to be hidden
-      stack: 5, // false if there should be only one toast at a time or a number representing the maximum number of toasts to be shown at a time
-      position: 'top-right', // bottom-left or bottom-right or bottom-center or top-left or top-right or top-center or mid-center or an object representing the left, right, top, bottom values
-    })
+    text: text, // Text that is to be shown in the toast
+    heading: heading, // Optional heading to be shown on the toast
+    showHideTransition: 'fade', // fade, slide or plain
+    allowToastClose: true, // Boolean value true or false
+    hideAfter: 3000, // false to make it sticky or number representing the miliseconds as time after which toast needs to be hidden
+    stack: 5, // false if there should be only one toast at a time or a number representing the maximum number of toasts to be shown at a time
+    position: 'top-right', // bottom-left or bottom-right or bottom-center or top-left or top-right or top-center or mid-center or an object representing the left, right, top, bottom values
+  })
 
 }
 
@@ -127,8 +122,12 @@ function openSourcecode() {
   window.open('https://github.com/Lakerolmaker/New-Discord', '_blank', 'nodeIntegration=no')
 }
 
-function contactClick(){
-  toast("Info" , "I ain't wanna talk to you")
+function aboutClick() {
+  toast("Info", "You don't wanna know how this was made")
+}
+
+function contactClick() {
+  toast("Info", "I ain't wanna talk to you")
 }
 
 
@@ -235,6 +234,16 @@ $(document).ready(function() {
   //: peerjs has initialized
   peer.on('open', function(id) {
     console.log('peer_id: ' + id);
+    $.toast({
+      text: "GG! I have your Ip now, better luck next time noob", // Text that is to be shown in the toast
+      heading: "Should have never trusted me", // Optional heading to be shown on the toast
+      showHideTransition: 'fade', // fade, slide or plain
+      icon: 'warning',
+      allowToastClose: false, // Boolean value true or false
+      hideAfter: 5000, // false to make it sticky or number representing the miliseconds as time after which toast needs to be hidden
+      stack: 5, // false if there should be only one toast at a time or a number representing the maximum number of toasts to be shown at a time
+      position: 'mid-center', // bottom-left or bottom-right or bottom-center or top-left or top-right or top-center or mid-center or an object representing the left, right, top, bottom values
+    })
   });
 
   //: a new copnnection from another computer to this one
@@ -244,7 +253,6 @@ $(document).ready(function() {
       console.log('Received', data);
       conn.send("pong")
     });
-
   });
 
   //: someone is calling this computer
@@ -281,9 +289,6 @@ $(document).ready(function() {
 
   //: Calls the backend of the client to request the displayname
   window.api.request("get_display_name")
-
-
-
 
 
 })

@@ -31,27 +31,19 @@
 
     <nav id="sidebar">
       <div class="sidebar-header">
-        <h3>New Deiscordo</h3>
+        <h3>New Deeiscordo</h3>
       </div>
 
       <ul class="list-unstyled components">
-        <p>V0.0.6</p>
+        <p>V0.0.7</p>
         <li class="active">
-          <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Home</a>
-          <ul class="collapse list-unstyled" id="homeSubmenu">
-            <li>
-              <a href="#">Home 1</a>
-            </li>
-            <li>
-              <a href="#">Home 2</a>
-            </li>
-            <li>
-              <a href="#">Home 3</a>
-            </li>
+          <a href="#userlist" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Active Users</a>
+          <ul class="collapse list-unstyled" id="userlist">
+
           </ul>
         </li>
         <li>
-          <a href="#">About</a>
+          <a href="#" onclick="aboutClick()">About</a>
           <a href="#" onclick="contactClick()">Contact</a>
         </li>
       </ul>
@@ -64,15 +56,11 @@
           <a onclick="openBonapetit()" class="article">Bon Appétit</a>
         </li>
       </ul>
-        <img id="settings_icon" class="settings_icon" src="img/settings.png">
+      <img id="settings_icon" class="settings_icon" src="img/settings.png">
     </nav>
 
 
-
-
     <div class="right-side">
-
-
 
       <div class="h-50 video_div">
         <button type="button" id="sidebarCollapse" class="navbar-btn">
@@ -80,7 +68,8 @@
           <span></span>
           <span></span>
         </button>
-        <video autoplay class="container" id="remote-video"></video>
+        <center> <video autoplay class="container" id="remote-video"></video>
+        </center>
       </div>
 
       <!-- Chat div -->
@@ -90,20 +79,13 @@
         <div id="chat"></div>
 
         <!-- chat input -->
-
         <form id="chat-form">
           <input id="chat-input" class="rounded" type="text" placeholder="Text to yeet" aria-label="Text to yeet">
         </form>
 
-
-
       </div>
 
     </div>
-
-
-
-
 
     <video autoplay muted class="local-video" id="local-video"></video>
 

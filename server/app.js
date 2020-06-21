@@ -1,13 +1,18 @@
 // Setup basic express server
 var path = require('path');
-var port = process.env.PORT || 3000;
-
-var io = require('socket.io')(port);
+var socket_port = process.env.socket_port || 3000;
+var peerjs_port = process.env.peer_port || 3001;
 
 var activeSockets = [];
+var io = require('socket.io')(socket_port);
+console.log("Socket Server running on port : " + socket_port)
 
 
-console.log("Server running on port : " + port),
+const { PeerServer } = require('peer');
+const peerServer = PeerServer({ port: peerjs_port, path: '/myapp' });
+console.log("Peerjs sevrer running on port : " + peerjs_port),
+
+
   io.on('connection', (socket) => {
 
     socket.on('send-username', data => {
