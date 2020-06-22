@@ -15,7 +15,7 @@ console.log("Peerjs sevrer running on port : " + peerjs_port),
 
   io.on('connection', (socket) => {
 
-    socket.on('send-username', data => {
+    socket.on('send_username', data => {
 
       console.log("")
       console.log("--------- New connection ---------")
@@ -51,6 +51,15 @@ console.log("Peerjs sevrer running on port : " + peerjs_port),
         users: [socket.user]
       });
 
+    });
+
+    socket.on("change_user_data", data => {
+      socket.user = data.user;
+      socket.broadcast.emit("update-user-list", {
+        socket_ids: [socket.id],
+        peer_ids: [socket.peer_id],
+        users: [socket.user]
+      });
     });
 
     socket.on("call-user", data => {

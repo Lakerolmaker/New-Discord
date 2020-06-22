@@ -9,6 +9,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/peerjs@1.2.0/dist/peerjs.min.js"></script>
+  <script src="audiojs/audio.min.js"></script>
+
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,700&display=swap" rel="stylesheet" />
@@ -36,7 +38,7 @@
       </div>
 
       <ul class="list-unstyled components">
-        <p>V0.0.8</p>
+        <p>V0.1.0</p>
         <li class="active">
           <a href="#userlist" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Active Users</a>
           <ul class="collapse list-unstyled" id="userlist">
@@ -107,12 +109,13 @@
       </div>
 
       <br>
-
       <p class="h4">Avatar / Profile picture</p>
       <input type="file" accept="image/*" class="rounded form-control-file" id="upload_avatar">
 
 
     </div>
+
+    <audio src="sound/Bon AppétitS.mp3" preload="auto" />
 
   </div>
 

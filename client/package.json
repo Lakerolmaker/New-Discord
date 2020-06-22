@@ -4,10 +4,13 @@
   "author": "Lakerolmaker",
   "description": " a imitation of discord",
   "platform": "win32",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "main": "app/app.js",
   "repository": "https://github.com/Lakerolmaker/New-Discord",
   "build": {
+    "extraFiles": [
+      "apiKeys.json"
+    ],
     "win": {
       "publish": {
         "provider": "github"

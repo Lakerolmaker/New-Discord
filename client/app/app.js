@@ -141,4 +141,49 @@ app.once('ready', () => {
 
   });
 
+  ipcMain.on('open_music_player', (event, arg) => {
+    music_player = new BrowserWindow({
+      // Set the initial width to 400px
+      width: 305,
+      // Set the initial height to 500px
+      height: 555,
+      // Don't show the window until it ready, this prevents any white flickering
+      show: true,
+      // Don't allow the window to be resized.
+      resizable: false,
+
+      frame: false,
+
+      webPreferences: {
+        nodeIntegration: false, // is default value after Electron v5
+        contextIsolation: true, // protect against prototype pollution
+        enableRemoteModule: false, // turn off remote
+      }
+
+    })
+
+    // Load a URL in the window to the local index.html path
+    music_player.loadURL(url.format({
+      pathname: path.join(__dirname, 'music_player/index.html'),
+      protocol: 'file:',
+      slashes: true
+    }))
+
+    // Show window when page is ready
+    music_player.once('ready-to-show', () => {
+      //window.maximize()
+      music_player.setMenuBarVisibility(false)
+      music_player.show()
+    })
+
+    music_player.on('resize', () => {
+      let {
+        width,
+        height
+      } = music_player.getBounds();
+      console.log("width:" + width + " height:" + height)
+    });
+
+  })
+
 })
