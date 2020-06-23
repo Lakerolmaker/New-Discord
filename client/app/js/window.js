@@ -11,14 +11,8 @@ const socket = io('http://81.230.72.203:' + port);
 
 var user;
 
-function unselectUsersFromList() {
-  const alreadySelectedUser = document.querySelectorAll(
-    ".active-user.active-user--selected"
-  );
-  alreadySelectedUser.forEach(el => {
-    el.setAttribute("class", "active-user");
-  });
-}
+var callsound = new Audio(' ./sound/call sound.mp3');
+
 
 function createUserItemContainer(data, i) {
 
@@ -35,7 +29,7 @@ function createUserItemContainer(data, i) {
 
   $a = $('<a href="#">' + data.users[i].display_name + '</a>')
   $a.on('click', ev => {
-    callUser(data.peer_ids[i]);
+    displayToCallConfirmation(data.socket_ids[i], data.peer_ids[i])
   })
 
   $el.append($a)
@@ -88,6 +82,20 @@ function callUser(peer_id) {
   call.on('stream', function(stream) {
     document.getElementById("remote-video").srcObject = stream;
   });
+
+}
+
+function displayToCallConfirmation(socket_id, peer_id) {
+  var display_name = $("#" + socket_id).find("a").text()
+  $("#to_call_confirtmation_title").html("Call User '" + display_name + "' ?")
+  $("#to_call_confirtmation_body").html("Do you wish to call '" + display_name + "' ?")
+
+  $("#call_user_btn").on('click', ev => {
+    callUser(peer_id);
+  })
+
+
+  $("#to_call_confirtmation").modal('show')
 
 }
 
@@ -152,6 +160,15 @@ function contactClick() {
   toast("Info", "I ain't wanna talk to you")
 }
 
+function playReciveCallSound() {
+  callsound.currentTime = 0
+  callsound.play();
+}
+
+function stopReciveCallSound() {
+  callsound.pause();
+}
+
 function addSocketEvents() {
   socket.on("update-user-list", data => {
     updateUserList(data);
@@ -185,11 +202,11 @@ function addPeerjsEvents() {
   //: someone is calling this computer
   peer.on('call', function(call) {
 
-
     $("#call_confirtmation_body").text(` wants to call you. Do accept this call?`)
 
     $("#answer_call_btn").on('click', function(e) {
       $("#call_confirtmation").modal("hide")
+      stopReciveCallSound()
       console.log("Call has been answered, making a connection")
       //: answer the call
       call.answer(localStream);
@@ -197,18 +214,21 @@ function addPeerjsEvents() {
 
     $("#reject_call_btn").on('click', function(e) {
       $("#call_confirtmation").modal("hide")
+      stopReciveCallSound()
       socket.emit("reject-call", {
         to: data.socket
       });
     })
 
-    //: Show the dialog
-    $("#call_confirtmation").modal("show")
-
     //: when a stream is detected in the call
     call.on('stream', function(stream) {
       document.getElementById("remote-video").srcObject = stream;
     });
+
+    //: Show the dialog
+    $("#call_confirtmation").modal("show")
+    playReciveCallSound();
+
   });
 }
 
@@ -277,10 +297,6 @@ $(document).ready(function() {
     });
 
 
-
-  audiojs.events.ready(function() {
-    var as = audiojs.createAll();
-  });
 
 
   //: Calls the backend of the client to request the displayname

@@ -9,7 +9,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/peerjs@1.2.0/dist/peerjs.min.js"></script>
-  <script src="audiojs/audio.min.js"></script>
 
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -38,7 +37,7 @@
       </div>
 
       <ul class="list-unstyled components">
-        <p>V0.1.0</p>
+        <p>V0.1.2</p>
         <li class="active">
           <a href="#userlist" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Active Users</a>
           <ul class="collapse list-unstyled" id="userlist">
@@ -111,12 +110,7 @@
       <br>
       <p class="h4">Avatar / Profile picture</p>
       <input type="file" accept="image/*" class="rounded form-control-file" id="upload_avatar">
-
-
     </div>
-
-    <audio src="sound/Bon AppétitS.mp3" preload="auto" />
-
   </div>
 
 
@@ -124,17 +118,37 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="popupModalLongTitle">New call</h5>
+          <h5 class="modal-title modal_text" id="popupModalLongTitle">New call</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body" id="call_confirtmation_body">
+        <div class="modal-body modal_text" id="call_confirtmation_body">
 
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" id="reject_call_btn" data-dismiss="modal">Baba Booey</button>
           <button type="button" id="answer_call_btn" class="btn btn-primary">Answer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="to_call_confirtmation" tabindex="-1" role="dialog" aria-labelledby="popupModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title modal_text" id="to_call_confirtmation_title">Call User?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body modal_text" id="to_call_confirtmation_body">
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancel_call_btn" data-dismiss="modal">Cancel</button>
+          <button type="button" id="call_user_btn"data-dismiss="modal" class="btn btn-primary">Call</button>
         </div>
       </div>
     </div>
@@ -160,6 +174,8 @@
       </div>
     </div>
   </div>
+
+
 
 
   <div class="toast" role="alert" id="toast1" aria-live="assertive" aria-atomic="true" style="position: absolute; top: 0; right: 0;">
