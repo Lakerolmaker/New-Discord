@@ -1,6 +1,7 @@
 const {
   contextBridge,
-  ipcRenderer
+  ipcRenderer,
+  desktopCapturer
 } = require("electron");
 
 // Expose protected methods that allow the renderer process to use
@@ -14,6 +15,9 @@ contextBridge.exposeInMainWorld(
     //receive: (channel, func) => {
     response: (channel, func) => {
       ipcRenderer.on(channel, (event, ...args) => func(event, ...args));
+    },
+    get_desktopCapturer: () => {
+      return desktopCapturer
     }
   }
 );

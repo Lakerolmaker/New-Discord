@@ -1,18 +1,30 @@
+var peerjs_port = 3001;
 const peer = new Peer({
   host: '81.230.72.203',
-  port: 3001,
+  port: peerjs_port,
   path: '/myapp'
 });
 
-var localStream;
-var port = 3000;
+const peer_video = new Peer({
+  host: '81.230.72.203',
+  port: peerjs_port,
+  path: '/myapp'
+});
 
-const socket = io('http://81.230.72.203:' + port);
+var localStream_audio;
+var localStream_video = new MediaStream();;
+var remoteStream_audio;
+var remoteStream_video;
+
+var data_connection_audio;
+var data_connection_video;
+
+var socket_port = 3000;
+const socket = io('http://81.230.72.203:' + socket_port);
 
 var user;
 
 var callsound = new Audio(' ./sound/call sound.mp3');
-
 
 function createUserItemContainer(data, i) {
 
@@ -29,7 +41,7 @@ function createUserItemContainer(data, i) {
 
   $a = $('<a href="#">' + data.users[i].display_name + '</a>')
   $a.on('click', ev => {
-    displayToCallConfirmation(data.socket_ids[i], data.peer_ids[i])
+    displayToCallConfirmation(data.socket_ids[i], data.peer_ids[i], data.peer_video_ids[i])
   })
 
   $el.append($a)
@@ -63,35 +75,97 @@ function createMessageItem(user, message_content) {
   return $el;
 }
 
-function callUser(peer_id) {
+function callUser(peer_id, peer_video_id) {
 
-  var conn = peer.connect(peer_id);
-
-  conn.on('open', function() {
+  var conn_audio = peer.connect(peer_id);
+  data_connection_audio = conn_audio;
+  conn_audio.on('open', function() {
     // Receive messages
-    conn.on('data', function(data) {
+    conn_audio.on('data', function(data) {
+      console.log('Received', data);
+      if(data == "disconnect"){
+        disconnect_from_call()
+      }
+    });
+
+    conn_audio.send('ping');
+  });
+
+  var call_audio = peer.call(peer_id,
+    localStream_audio)
+
+  call_audio.on('stream', function(stream) {
+    document.getElementById("remote-audio").srcObject = stream;
+    $("#call-ui").show(500)
+  });
+
+
+  //:  Video connection
+  var conn_video = peer_video.connect(peer_video_id);
+  data_connection_video = conn_video;
+  conn_video.on('open', function() {
+    // Receive messages
+    conn_video.on('data', function(data) {
       console.log('Received', data);
     });
 
-    conn.send('ping');
+    conn_video.send('ping');
   });
 
-  var call = peer.call(peer_id,
-    localStream)
 
-  call.on('stream', function(stream) {
-    document.getElementById("remote-video").srcObject = stream;
-  });
+
+  $("#turn_on_camera_btn").on('click', function(e) {
+    navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false
+      })
+      .then(stream => {
+        console.log("added video")
+        localStream_video = stream;
+        const localVideo = document.getElementById("local-video");
+        localVideo.srcObject = stream;
+
+        var conn_video = peer_video.call(peer_video_id,
+          localStream_video)
+
+        conn_video.on('stream', function(stream) {
+          document.getElementById("remote-video").srcObject = stream;
+        });
+        $("#local-video").show(500)
+      })
+      .catch(error => {
+        toast("Error", "Could not access the webcam")
+      });
+  })
+
+  $("#turn_on_screen_Share_btn").on('click', function(e) {
+    get_WindowCapure_sources().then(sources => {
+      get_WindowCapure_Stream(sources[0].id).then(stream => {
+        localStream_video = stream;
+        const localVideo = document.getElementById("local-video");
+        localVideo.srcObject = stream;
+
+        var conn_video = peer_video.call(peer_video_id,
+          localStream_video)
+
+        conn_video.on('stream', function(stream) {
+          document.getElementById("remote-video").srcObject = stream;
+        });
+        $("#local-video").show(500)
+      })
+    })
+  })
+
 
 }
 
-function displayToCallConfirmation(socket_id, peer_id) {
+function displayToCallConfirmation(socket_id, peer_id, peer_video_id) {
   var display_name = $("#" + socket_id).find("a").text()
   $("#to_call_confirtmation_title").html("Call User '" + display_name + "' ?")
   $("#to_call_confirtmation_body").html("Do you wish to call '" + display_name + "' ?")
 
   $("#call_user_btn").on('click', ev => {
-    callUser(peer_id);
+    callUser(peer_id, peer_video_id);
   })
 
 
@@ -131,17 +205,38 @@ function toast(heading, text) {
 
 }
 
-
 function connectToNetwork() {
-  if (peer._id != null && display_name != null) {
+  if (peer._id != null && display_name != null && peer_video._id != null) {
     console.log("connecting to network")
     socket.emit('send_username', {
       peer_id: peer._id,
+      peer_video_id: peer_video._id,
       user: user
     });
   } else {
     window.setTimeout(connectToNetwork, 1000);
   }
+}
+
+function disconnect_from_call() {
+  peer.disconnect();
+  peer_video.disconnect();
+  data_connection_audio.close();
+  data_connection_video.close();
+  peer.destroy()
+  peer_video.destroy()
+  document.getElementById("remote-video").srcObject = null
+  destroy_stream(localStream_video)
+  destroy_stream(remoteStream_audio)
+  destroy_stream(remoteStream_video)
+  $("#call-ui").hide(500)
+  $("#local-video").hide(500)
+}
+
+function destroy_stream(stream) {
+  try {
+    stream.getTracks().forEach(track => track.stop());
+  } catch (err) {}
 }
 
 function openBonapetit() {
@@ -160,6 +255,52 @@ function contactClick() {
   toast("Info", "I ain't wanna talk to you")
 }
 
+function addVideoStream() {
+  navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: false
+    })
+    .then(stream => {
+
+      localStream_video = stream;
+
+    })
+    .catch(error => {
+      console.log(error)
+    });
+}
+
+async function get_WindowCapure_sources() {
+  return window.api.get_desktopCapturer().getSources({
+    types: ['window', 'screen'],
+    fetchWindowIcons: true
+
+  })
+}
+
+function get_WindowCapure_Stream(source_id) {
+
+  return navigator.mediaDevices.getUserMedia({
+    audio: false,
+    video: {
+      mandatory: {
+        chromeMediaSource: 'desktop',
+        chromeMediaSourceId: source_id,
+        minWidth: 1280,
+        maxWidth: 1280,
+        minHeight: 720,
+        maxHeight: 720
+      }
+    },
+    audio: {
+      mandatory: {
+        chromeMediaSource: 'desktop'
+      }
+    }
+  })
+
+}
+
 function playReciveCallSound() {
   callsound.currentTime = 0
   callsound.play();
@@ -171,6 +312,7 @@ function stopReciveCallSound() {
 
 function addSocketEvents() {
   socket.on("update-user-list", data => {
+    console.log(data)
     updateUserList(data);
   });
 
@@ -192,10 +334,18 @@ function addSocketEvents() {
 function addPeerjsEvents() {
   //: a new copnnection from another computer to this one
   peer.on('connection', function(conn) {
+    data_connection_audio = conn;
 
     conn.on('data', function(data) {
       console.log('Received', data);
+      if(data == "disconnect"){
+        disconnect_from_call()
+      }
       conn.send("pong")
+    });
+
+    conn.on('disconnect', function(data) {
+      disconnect_from_call()
     });
   });
 
@@ -209,7 +359,8 @@ function addPeerjsEvents() {
       stopReciveCallSound()
       console.log("Call has been answered, making a connection")
       //: answer the call
-      call.answer(localStream);
+      call.answer(localStream_audio);
+      $("#call-ui").show(500)
     })
 
     $("#reject_call_btn").on('click', function(e) {
@@ -222,14 +373,87 @@ function addPeerjsEvents() {
 
     //: when a stream is detected in the call
     call.on('stream', function(stream) {
-      document.getElementById("remote-video").srcObject = stream;
+      console.log(stream)
+      remoteStream_audio = stream;
+      document.getElementById("remote-audio").srcObject = stream;
     });
 
     //: Show the dialog
     $("#call_confirtmation").modal("show")
     playReciveCallSound();
+  });
+
+  peer.on('close', function(ev) {
+    console.log("connection closed")
+      disconnect_from_call();
+    console.log(ev)
+  })
+
+
+  peer_video.on('connection', function(conn) {
+    data_connection_video = conn;
+    console.log("new connection")
+    console.log(conn)
+    conn.on('data', function(data) {
+      console.log('Received', data);
+      conn.send("pong")
+    });
+
+    $("#turn_on_camera_btn").on('click', function(e) {
+      navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        })
+        .then(stream => {
+          console.log("added video")
+          localStream_video = stream;
+          const localVideo = document.getElementById("local-video");
+          localVideo.srcObject = stream;
+
+          var conn_video = peer_video.call(conn.peer,
+            localStream_video)
+
+          conn_video.on('stream', function(stream) {
+            document.getElementById("remote-video").srcObject = stream;
+          });
+          $("#local-video").show(500)
+        })
+        .catch(error => {
+          toast("Error", "Could not access the webcam")
+        });
+    })
+
+    $("#turn_on_screen_Share_btn").on('click', function(e) {
+      get_WindowCapure_sources().then(sources => {
+        get_WindowCapure_Stream(sources[0].id).then(stream => {
+          localStream_video = stream;
+          const localVideo = document.getElementById("local-video");
+          localVideo.srcObject = stream;
+
+          var conn_video = peer_video.call(conn.peer,
+            localStream_video)
+
+          conn_video.on('stream', function(stream) {
+            document.getElementById("remote-video").srcObject = stream;
+          });
+          $("#local-video").show(500)
+        })
+      })
+    })
 
   });
+
+  peer_video.on('call', function(call) {
+    console.log("someone video called ")
+    call.on('stream', function(stream) {
+      console.log(stream)
+      remoteStream_video = stream;
+      document.getElementById("remote-video").srcObject = stream;
+    });
+
+    call.answer(localStream_video);
+  });
+
 }
 
 function addClickEvents() {
@@ -244,6 +468,12 @@ function addClickEvents() {
     window.api.request("set_display_name", display_name)
     connectToNetwork();
   })
+
+  $("#disconnect_btn").on('click', function(e) {
+    console.log("disconnecting from call")
+    disconnect_from_call();
+  })
+
 }
 
 function addClientBackendEvents() {
@@ -261,9 +491,15 @@ function addClientBackendEvents() {
   window.api.response("message", (event, arg) => {
     console.log(arg)
   })
+
+  window.api.response("get_WindowCapure_Stream", (event, arg) => {
+    console.log(arg)
+  })
 }
 
 $(document).ready(function() {
+
+  $("#call-ui").hide()
 
   addSocketEvents()
   addPeerjsEvents()
@@ -282,25 +518,21 @@ $(document).ready(function() {
   })
 
   navigator.mediaDevices.getUserMedia({
-      video: true,
+      video: false,
       audio: true
     })
     .then(stream => {
-      localStream = stream;
+      localStream_audio = stream;
       const localVideo = document.getElementById("local-video");
       localVideo.srcObject = stream;
-
-      $("#local-video").show(500)
     })
     .catch(error => {
       toast("Error", "Could not access the webcam")
     });
 
-
-
-
   //: Calls the backend of the client to request the displayname
   window.api.request("get_user_info")
+
 
 
 })

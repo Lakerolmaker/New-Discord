@@ -149,11 +149,38 @@ body {
   background: rgb(24, 25, 28);
 }
 
+#remote-audio{
+  width: 0;
+}
+
 #remote-video {
   max-width: 100%;
-  max-height: 100%;
-  height: 100%;
+  max-height: 80%;
+  height: 80%;
   padding: 0;
+}
+
+#call-ui {
+  display: inline-flex;
+  -webkit-box-orient: horizontal;
+  align-items: center;
+}
+
+.centerButton {
+  background: #2f3136;
+  margin: 0 8px;
+  border-radius: 50%;
+  padding: 16px;
+  transition: background .15s ease-in-out;
+  border: 0;
+}
+
+#disconnect_btn{
+  background: #f04747;
+}
+
+.controlIcon{
+  color: #fff;
 }
 
 .local-video {

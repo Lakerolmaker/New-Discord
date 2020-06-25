@@ -10,7 +10,7 @@ const io = require('socket.io')
 const showDialog = require('./js/show-dialog');
 const Store = require('./js/store.js');
 const imgur = require('imgur');
-
+const { desktopCapturer } = require('electron')
 
 const {
   autoUpdater
@@ -139,6 +139,11 @@ app.once('ready', () => {
         console.error(err.message);
       });
 
+  });
+
+  ipcMain.on('get_windowCapture', (event, arg) => {
+
+  console.log(desktopCapturer)
   });
 
   ipcMain.on('open_music_player', (event, arg) => {

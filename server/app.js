@@ -25,6 +25,7 @@ console.log("Peerjs sevrer running on port : " + peerjs_port),
 
       socket.user = data.user;
       socket.peer_id = data.peer_id
+      socket.peer_video_id = data.peer_video_id
 
       let socket_ids = activeSockets.map(function(a) {
         return a.id;
@@ -37,9 +38,14 @@ console.log("Peerjs sevrer running on port : " + peerjs_port),
         return a.peer_id;
       });
 
+      let peer_video_ids = activeSockets.map(function(a) {
+        return a.peer_video_id;
+      });
+
       socket.emit("update-user-list", {
         socket_ids: socket_ids,
-        peer_ids: [peer_ids],
+        peer_ids: peer_ids,
+        peer_video_ids: peer_video_ids,
         users: users
       });
 
@@ -48,6 +54,7 @@ console.log("Peerjs sevrer running on port : " + peerjs_port),
       socket.broadcast.emit("update-user-list", {
         socket_ids: [socket.id],
         peer_ids: [socket.peer_id],
+        peer_video_ids: [socket.peer_video_id],
         users: [socket.user]
       });
 
