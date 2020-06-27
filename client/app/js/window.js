@@ -26,12 +26,15 @@ var user;
 
 var callsound = new Audio(' ./sound/call sound.mp3');
 
+//: a boolean of wheather or not the user is muted
+var muted = false;
+
 function createUserItemContainer(data, i) {
 
   $el = $('<li class="user_element"></li>')
   $el.attr('id', data.socket_ids[i]);
 
-  if (user.avatar_url == undefined) {
+  if (data.users[i].avatar_url == undefined) {
     $img = $('<img class="avatar small_avatar" src="img/avatar.jpg">')
     $el.append($img)
   } else {
@@ -77,19 +80,39 @@ function createMessageItem(user, message_content) {
 
 function callUser(peer_id, peer_video_id) {
 
+  peer.on('close', function(ev) {
+    console.log("connection closed")
+    disconnect_from_call();
+  })
+
+  peer.on('disconnected', function(ev) {
+    console.log("connection disconnecting")
+    disconnect_from_call();
+  })
+
   var conn_audio = peer.connect(peer_id);
   data_connection_audio = conn_audio;
   conn_audio.on('open', function() {
     // Receive messages
     conn_audio.on('data', function(data) {
       console.log('Received', data);
-      if(data == "disconnect"){
+      if (data == "disconnect") {
         disconnect_from_call()
       }
     });
 
     conn_audio.send('ping');
   });
+
+  conn_audio.on('close', function(ev) {
+    console.log("connection closed")
+    disconnect_from_call();
+  })
+
+  conn_audio.on('disconnected', function(ev) {
+    console.log("connection disconnecting")
+    disconnect_from_call();
+  })
 
   var call_audio = peer.call(peer_id,
     localStream_audio)
@@ -98,7 +121,6 @@ function callUser(peer_id, peer_video_id) {
     document.getElementById("remote-audio").srcObject = stream;
     $("#call-ui").show(500)
   });
-
 
   //:  Video connection
   var conn_video = peer_video.connect(peer_video_id);
@@ -111,8 +133,6 @@ function callUser(peer_id, peer_video_id) {
 
     conn_video.send('ping');
   });
-
-
 
   $("#turn_on_camera_btn").on('click', function(e) {
     navigator.mediaDevices.getUserMedia({
@@ -168,9 +188,7 @@ function displayToCallConfirmation(socket_id, peer_id, peer_video_id) {
     callUser(peer_id, peer_video_id);
   })
 
-
   $("#to_call_confirtmation").modal('show')
-
 }
 
 
@@ -191,7 +209,7 @@ function updateUserList(data) {
 }
 
 function toast(heading, text) {
-  $.toast().reset('all');
+  //  $.toast().reset('all');
 
   $.toast({
     text: text, // Text that is to be shown in the toast
@@ -199,7 +217,7 @@ function toast(heading, text) {
     showHideTransition: 'fade', // fade, slide or plain
     allowToastClose: true, // Boolean value true or false
     hideAfter: 5000, // false to make it sticky or number representing the miliseconds as time after which toast needs to be hidden
-    stack: 5, // false if there should be only one toast at a time or a number representing the maximum number of toasts to be shown at a time
+    stack: 3, // false if there should be only one toast at a time or a number representing the maximum number of toasts to be shown at a time
     position: 'top-right', // bottom-left or bottom-right or bottom-center or top-left or top-right or top-center or mid-center or an object representing the left, right, top, bottom values
   })
 
@@ -218,21 +236,27 @@ function connectToNetwork() {
   }
 }
 
+//: Disconnects from the call and cleans up all recourses.
+//: NOTE: all streams must be destoyed for the connetion to end.
+//: The audio stream is then reinitialized.
 function disconnect_from_call() {
-  peer.disconnect();
-  peer_video.disconnect();
+  console.log("disconnecting from call")
   data_connection_audio.close();
   data_connection_video.close();
-  peer.destroy()
-  peer_video.destroy()
   document.getElementById("remote-video").srcObject = null
+  destroy_stream(localStream_audio)
   destroy_stream(localStream_video)
   destroy_stream(remoteStream_audio)
   destroy_stream(remoteStream_video)
   $("#call-ui").hide(500)
   $("#local-video").hide(500)
+  getAudioStream().then(strem => {
+    localStream_audio = strem;
+  })
+
 }
 
+//: Destroys a stream
 function destroy_stream(stream) {
   try {
     stream.getTracks().forEach(track => track.stop());
@@ -255,19 +279,24 @@ function contactClick() {
   toast("Info", "I ain't wanna talk to you")
 }
 
-function addVideoStream() {
-  navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: false
-    })
-    .then(stream => {
+//: Get's the stream for the camera connected to the user
+async function getVideoStream() {
+  return navigator.mediaDevices.getUserMedia({
+    video: true,
+    audio: false
+  }).catch(error => {
+    toast("Error", "Could not access the webcam")
+  });
+}
 
-      localStream_video = stream;
-
-    })
-    .catch(error => {
-      console.log(error)
-    });
+//: Get's the user selected microphone
+async function getAudioStream() {
+  return navigator.mediaDevices.getUserMedia({
+    video: false,
+    audio: true
+  }).catch(error => {
+    toast("Error", "Could not access the microphone")
+  });
 }
 
 async function get_WindowCapure_sources() {
@@ -338,15 +367,20 @@ function addPeerjsEvents() {
 
     conn.on('data', function(data) {
       console.log('Received', data);
-      if(data == "disconnect"){
+      if (data == "disconnect") {
         disconnect_from_call()
       }
       conn.send("pong")
     });
 
-    conn.on('disconnect', function(data) {
+    conn.on('disconnected', function(data) {
       disconnect_from_call()
     });
+
+    conn.on('close', function(ev) {
+      console.log("connection closed")
+      disconnect_from_call();
+    })
   });
 
   //: someone is calling this computer
@@ -383,11 +417,6 @@ function addPeerjsEvents() {
     playReciveCallSound();
   });
 
-  peer.on('close', function(ev) {
-    console.log("connection closed")
-      disconnect_from_call();
-    console.log(ev)
-  })
 
 
   peer_video.on('connection', function(conn) {
@@ -463,10 +492,15 @@ function addClickEvents() {
   });
 
   $("#connect_btn").on('click', function(e) {
-    $('#displayname_modal').modal('hide')
-    display_name = $("#display_name").val()
-    window.api.request("set_display_name", display_name)
-    connectToNetwork();
+    if ($("#display_name").val() != "") {
+      $('#displayname_modal').modal('hide')
+      display_name = $("#display_name").val()
+      window.api.request("set_display_name", display_name)
+      $("#main").show()
+      connectToNetwork();
+    } else {
+      toast("Error", "Display name can't be empty")
+    }
   })
 
   $("#disconnect_btn").on('click', function(e) {
@@ -474,16 +508,33 @@ function addClickEvents() {
     disconnect_from_call();
   })
 
+  $("#mute_btn").on('click', function() {
+    console.log("clicked 1")
+    muted = !muted;
+    if(muted){
+      $("#mute_btn").addClass('centerButton_active');
+      $("#mute_btn").removeClass('centerButton_deactive');
+      $("#mute_btn svg").css("color", "#060607")
+      localStream_audio.getTracks()[0].enabled = false
+    }else{
+      $("#mute_btn").addClass('centerButton_deactive');
+      $("#mute_btn").removeClass('centerButton_active');
+      $("#mute_btn svg").css("color", "#fff")
+      localStream_audio.getTracks()[0].enabled = true
+    }
+  });
+
 }
 
 function addClientBackendEvents() {
   window.api.response("recive_user_info", (event, arg) => {
     user = arg;
-    console.log("Display name: " + user.display_name)
     console.log(user)
     if (user.display_name == undefined) {
       $('#displayname_modal').modal('show')
     } else {
+      console.log("Display name: " + user.display_name)
+      $("#main").show()
       connectToNetwork();
     }
   })
@@ -500,6 +551,7 @@ function addClientBackendEvents() {
 $(document).ready(function() {
 
   $("#call-ui").hide()
+  $("#main").hide()
 
   addSocketEvents()
   addPeerjsEvents()
@@ -517,22 +569,12 @@ $(document).ready(function() {
     }
   })
 
-  navigator.mediaDevices.getUserMedia({
-      video: false,
-      audio: true
-    })
-    .then(stream => {
-      localStream_audio = stream;
-      const localVideo = document.getElementById("local-video");
-      localVideo.srcObject = stream;
-    })
-    .catch(error => {
-      toast("Error", "Could not access the webcam")
-    });
+  //: initializes the audio stream
+  getAudioStream().then(strem => {
+    localStream_audio = strem;
+  })
 
   //: Calls the backend of the client to request the displayname
   window.api.request("get_user_info")
-
-
 
 })
