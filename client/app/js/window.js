@@ -1,12 +1,13 @@
+var peerjs_host = '81.230.72.203';
 var peerjs_port = 3001;
 const peer = new Peer({
-  host: '81.230.72.203',
+  host: peerjs_host,
   port: peerjs_port,
   path: '/myapp'
 });
 
 const peer_video = new Peer({
-  host: '81.230.72.203',
+  host: peerjs_host,
   port: peerjs_port,
   path: '/myapp'
 });
