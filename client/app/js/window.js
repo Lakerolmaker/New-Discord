@@ -2,15 +2,16 @@ console.log('%c New Deeiscordo', 'font-weight: bold; font-size: 50px;color: red;
 console.log('%c Please do not try to break my program, plz', 'font-weight: bold ;  text-shadow: 2px 2px 5px red;');
 
 
+var peerjs_host = "81.230.72.203";
 var peerjs_port = 3001;
 const peer = new Peer({
-  host: '81.230.72.203',
+  host: peerjs_host,
   port: peerjs_port,
   path: '/myapp'
 });
 
 const peer_video = new Peer({
-  host: '81.230.72.203',
+  host: peerjs_host,
   port: peerjs_port,
   path: '/myapp'
 });
@@ -23,8 +24,9 @@ var remoteStream_video;
 var data_connection_audio;
 var data_connection_video;
 
+var socket_host = 'http://81.230.72.203';
 var socket_port = 3000;
-const socket = io('http://81.230.72.203:' + socket_port);
+const socket = io( socket_host + ':' + socket_port);
 
 var user;
 
