@@ -89,7 +89,8 @@
 
 #sidebar ul li.active>a, a[aria-expanded="true"] {
   color: #fff;
-  background: #6d7fcc;
+  background: #42454e;
+  margin-top: 4px;
 }
 
 @media (max-width: 768px) {

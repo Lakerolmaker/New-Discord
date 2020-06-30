@@ -1,3 +1,7 @@
+console.log('%c New Deeiscordo', 'font-weight: bold; font-size: 50px;color: red; background-color: black;');
+console.log('%c Please do not try to break my program, plz', 'font-weight: bold ;  text-shadow: 2px 2px 5px red;');
+
+
 var peerjs_port = 3001;
 const peer = new Peer({
   host: '81.230.72.203',
@@ -12,7 +16,7 @@ const peer_video = new Peer({
 });
 
 var localStream_audio;
-var localStream_video = new MediaStream();;
+var localStream_video;
 var remoteStream_audio;
 var remoteStream_video;
 
@@ -29,26 +33,60 @@ var callsound = new Audio(' ./sound/call sound.mp3');
 //: a boolean of wheather or not the user is muted
 var muted = false;
 
-function createUserItemContainer(data, i) {
+function createUserItemContainer(user, is_friend) {
 
   $el = $('<li class="user_element"></li>')
-  $el.attr('id', data.socket_ids[i]);
+  $el.attr('id', user.socket_id);
 
-  if (data.users[i].avatar_url == undefined) {
+  if (user.avatar_url == undefined) {
     $img = $('<img class="avatar small_avatar" src="img/avatar.jpg">')
     $el.append($img)
   } else {
-    $img = $('<img class="avatar small_avatar" src="' + data.users[i].avatar_url + '">')
+    $img = $('<img class="avatar small_avatar" src="' + user.avatar_url + '">')
     $el.append($img)
   }
 
-  $a = $('<a href="#">' + data.users[i].display_name + '</a>')
+  $a = $('<a href="#">' + user.display_name + '</a>')
   $a.on('click', ev => {
-    displayToCallConfirmation(data.socket_ids[i], data.peer_ids[i], data.peer_video_ids[i])
+    displayToCallConfirmation(user.socket_id, user.peer_id, user.peer_video_id)
   })
-
   $el.append($a)
 
+  //: Adds different context menues to the user element depeding on the user is a friend or not
+  if (is_friend) {
+    $drop_down = $('<div class="dropdown-menu dropdown-menu-sm" id="context-menu"></div>')
+    $add_friend = $('<a class="dropdown-item" href="#">Remove Friend</a>')
+    $add_friend.on('click', ev => {
+      removeFriend(user.mac_id, user)
+    })
+    $cancel = $('<a class="dropdown-item" href="#">Cancel</a>')
+    $drop_down.append($add_friend)
+    $drop_down.append($cancel)
+    $el.append($drop_down)
+  } else {
+    $drop_down = $('<div class="dropdown-menu dropdown-menu-sm" id="context-menu"></div>')
+    $add_friend = $('<a class="dropdown-item" href="#">Add Friend</a>')
+    $add_friend.on('click', ev => {
+      addFriend(user.mac_id, user)
+    })
+    $cancel = $('<a class="dropdown-item" href="#">Cancel</a>')
+    $drop_down.append($add_friend)
+    $drop_down.append($cancel)
+    $el.append($drop_down)
+  }
+
+  $el.on('contextmenu', function(e) {
+    var top = e.pageY - 10;
+    var left = e.pageX - 90;
+    $drop_down.css({
+      display: "block",
+      top: top,
+      left: left
+    }).addClass("show");
+    return false; //blocks default Webbrowser right click menu
+  }).on("click", function() {
+    $("#context-menu").removeClass("show").hide();
+  });
 
   return $el;
 }
@@ -179,6 +217,20 @@ function callUser(peer_id, peer_video_id) {
 
 }
 
+function addFriend(friend_id, newuser) {
+  user.friendList.push(friend_id)
+  window.api.request("add_friend", friend_id)
+  $("#" + newuser.socket_id).remove()
+  $("#friendlist").append(createUserItemContainer(newuser, true));
+}
+
+function removeFriend(friend_id, newuser) {
+  user.friendList = user.friendList.filter(id => id != friend_id);
+  window.api.request("remove_friend" , friend_id)
+  $("#" + newuser.socket_id).remove()
+  $("#userlist").append(createUserItemContainer(newuser, false));
+}
+
 function displayToCallConfirmation(socket_id, peer_id, peer_video_id) {
   var display_name = $("#" + socket_id).find("a").text()
   $("#to_call_confirtmation_title").html("Call User '" + display_name + "' ?")
@@ -194,15 +246,19 @@ function displayToCallConfirmation(socket_id, peer_id, peer_video_id) {
 
 function updateUserList(data) {
   const activeUserContainer = document.getElementById("userlist");
-
-  data.socket_ids.forEach(function(socketId, i) {
-    const alreadyExistingUser = document.getElementById(socketId);
-    if (!alreadyExistingUser && data.socket_ids[0].lenght != 0) {
-      //: Adds the user to the user list if it is not in it
-      $("#userlist").append(createUserItemContainer(data, i));
+  console.log(data)
+  data.users.forEach(function(newuser, i) {
+    const alreadyExistingUser = document.getElementById(newuser.socketId);
+    const is_friend = user.friendList.includes(newuser.mac_id);
+    if (!alreadyExistingUser && data.users[0].lenght != 0) {
+      if (is_friend) {
+        $("#friendlist").append(createUserItemContainer(newuser, is_friend));
+      } else {
+        $("#userlist").append(createUserItemContainer(newuser, is_friend));
+      }
     } else if (alreadyExistingUser) {
       //: updates the user element with the updated info
-      $("#" + socketId).replaceWith(createUserItemContainer(data, i))
+      $("#" + socketId).replaceWith(createUserItemContainer(newuser, is_friend))
     }
   });
 
@@ -226,9 +282,9 @@ function toast(heading, text) {
 function connectToNetwork() {
   if (peer._id != null && display_name != null && peer_video._id != null) {
     console.log("connecting to network")
+    user.peer_id = peer._id;
+    user.peer_video_id = peer_video._id;
     socket.emit('send_username', {
-      peer_id: peer._id,
-      peer_video_id: peer_video._id,
       user: user
     });
   } else {
@@ -341,7 +397,6 @@ function stopReciveCallSound() {
 
 function addSocketEvents() {
   socket.on("update-user-list", data => {
-    console.log(data)
     updateUserList(data);
   });
 
@@ -511,12 +566,12 @@ function addClickEvents() {
   $("#mute_btn").on('click', function() {
     console.log("clicked 1")
     muted = !muted;
-    if(muted){
+    if (muted) {
       $("#mute_btn").addClass('centerButton_active');
       $("#mute_btn").removeClass('centerButton_deactive');
       $("#mute_btn svg").css("color", "#060607")
       localStream_audio.getTracks()[0].enabled = false
-    }else{
+    } else {
       $("#mute_btn").addClass('centerButton_deactive');
       $("#mute_btn").removeClass('centerButton_active');
       $("#mute_btn svg").css("color", "#fff")
@@ -529,6 +584,7 @@ function addClickEvents() {
 function addClientBackendEvents() {
   window.api.response("recive_user_info", (event, arg) => {
     user = arg;
+    console.log("User Data:")
     console.log(user)
     if (user.display_name == undefined) {
       $('#displayname_modal').modal('show')

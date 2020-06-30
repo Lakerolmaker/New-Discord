@@ -1,22 +1,23 @@
+//window.webContents.send('message',"hello" );
+
 const {
   app,
   BrowserWindow,
-  ipcMain
+  ipcMain,
+  desktopCapturer
 } = require('electron') // http://electronjs.org/docs/api
 const path = require('path') // https://nodejs.org/api/path.html
 const fs = require('fs');
 const url = require('url') // https://nodejs.org/api/url.html
 const io = require('socket.io')
 const showDialog = require('./js/show-dialog');
-const Store = require('./js/store.js');
+const Store = require('electron-store');
 const imgur = require('imgur');
-const { desktopCapturer } = require('electron')
-
+const isDev = require('electron-is-dev');
+const macaddress = require('macaddress');
 const {
   autoUpdater
 } = require("electron-updater");
-
-const isDev = require('electron-is-dev');
 
 if (isDev) {
   console.log('Running in development');
@@ -24,30 +25,30 @@ if (isDev) {
   console.log('Running in production');
 }
 
+var mac_address;
+macaddress.all().then(function(all) {
+  mac_address = all.Ethernet.mac;
+  console.log("Mac adress : " + mac_address)
+});
 
 console.log("Hewwo Uwu")
 
-let rawdata = fs.readFileSync('apiKeys.json');
-let apiKeys = JSON.parse(rawdata);
-
+let api_rawdata = fs.readFileSync('apiKeys.json');
+let apiKeys = JSON.parse(api_rawdata);
 imgur.setClientId(apiKeys.imgur);
 
-
-
-// First instantiate the class
 const store = new Store({
-  // We'll call our data file 'user-preferences'
   configName: 'user-preferences',
   defaults: {
-    // 800x600 is the default size of our window
     windowBounds: {
       width: 1100,
       height: 650
-    }
+    },
+    friendList: []
   }
 });
+var friendList = store.get('friendList');
 
-// Wait until the app is ready
 app.once('ready', () => {
 
   autoUpdater.checkForUpdatesAndNotify();
@@ -114,81 +115,85 @@ app.once('ready', () => {
       width,
       height
     });
-    //window.webContents.send('message',"hello" );
-  });
-
-
-  ipcMain.on('set_display_name', (event, arg) => {
-    store.set('display_name', arg);
-  });
-
-  ipcMain.on('get_user_info', (event, arg) => {
-    let user = {};
-    user.display_name = store.get("display_name")
-    user.avatar_url = store.get("avatar_url")
-    event.reply('recive_user_info', user)
-  })
-
-  ipcMain.on('upload_image', (event, arg) => {
-    imgur.uploadFile(arg)
-      .then(function(json) {
-        store.set('avatar_url', json.data.link);
-        event.reply("get_avatar_url", json.data.link)
-      })
-      .catch(function(err) {
-        console.error(err.message);
-      });
 
   });
+})
 
-  ipcMain.on('get_windowCapture', (event, arg) => {
+ipcMain.on('set_display_name', (event, arg) => {
+  store.set('display_name', arg);
+});
 
-  console.log(desktopCapturer)
-  });
+ipcMain.on('add_friend', (event, arg) => {
+  friendList.push(arg);
+  store.set('friendList', friendList);
+});
 
-  ipcMain.on('open_music_player', (event, arg) => {
-    music_player = new BrowserWindow({
-      // Set the initial width to 400px
-      width: 305,
-      // Set the initial height to 500px
-      height: 555,
-      // Don't show the window until it ready, this prevents any white flickering
-      show: true,
-      // Don't allow the window to be resized.
-      resizable: false,
+ipcMain.on('remove_friend', (event, arg) => {
+  friendList = friendList.filter(id => id != arg);
+  store.set('friendList', friendList);
+});
 
-      frame: false,
+ipcMain.on('get_user_info', (event, arg) => {
+  let user = {};
+  user.mac_id = mac_address;
+  user.display_name = store.get("display_name")
+  user.avatar_url = store.get("avatar_url")
+  user.friendList = store.get("friendList") || []
+  event.reply('recive_user_info', user)
+})
 
-      webPreferences: {
-        nodeIntegration: false, // is default value after Electron v5
-        contextIsolation: true, // protect against prototype pollution
-        enableRemoteModule: false, // turn off remote
-      }
-
+ipcMain.on('upload_image', (event, arg) => {
+  imgur.uploadFile(arg)
+    .then(function(json) {
+      store.set('avatar_url', json.data.link);
+      event.reply("get_avatar_url", json.data.link)
     })
-
-    // Load a URL in the window to the local index.html path
-    music_player.loadURL(url.format({
-      pathname: path.join(__dirname, 'music_player/index.html'),
-      protocol: 'file:',
-      slashes: true
-    }))
-
-    // Show window when page is ready
-    music_player.once('ready-to-show', () => {
-      //window.maximize()
-      music_player.setMenuBarVisibility(false)
-      music_player.show()
-    })
-
-    music_player.on('resize', () => {
-      let {
-        width,
-        height
-      } = music_player.getBounds();
-      console.log("width:" + width + " height:" + height)
+    .catch(function(err) {
+      console.error(err.message);
     });
+});
+
+ipcMain.on('open_music_player', (event, arg) => {
+  music_player = new BrowserWindow({
+    // Set the initial width to 400px
+    width: 305,
+    // Set the initial height to 500px
+    height: 555,
+    // Don't show the window until it ready, this prevents any white flickering
+    show: true,
+    // Don't allow the window to be resized.
+    resizable: false,
+
+    frame: false,
+
+    webPreferences: {
+      nodeIntegration: false, // is default value after Electron v5
+      contextIsolation: true, // protect against prototype pollution
+      enableRemoteModule: false, // turn off remote
+    }
 
   })
+
+  // Load a URL in the window to the local index.html path
+  music_player.loadURL(url.format({
+    pathname: path.join(__dirname, 'music_player/index.html'),
+    protocol: 'file:',
+    slashes: true
+  }))
+
+  // Show window when page is ready
+  music_player.once('ready-to-show', () => {
+    //window.maximize()
+    music_player.setMenuBarVisibility(false)
+    music_player.show()
+  })
+
+  music_player.on('resize', () => {
+    let {
+      width,
+      height
+    } = music_player.getBounds();
+    console.log("width:" + width + " height:" + height)
+  });
 
 })

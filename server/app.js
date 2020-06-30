@@ -20,41 +20,23 @@ console.log("Peerjs sevrer running on port : " + peerjs_port),
       console.log("")
       console.log("--------- New connection ---------")
       console.log("Username : " + data.user.display_name)
-      console.log("peer_id  : " + data.peer_id)
+      console.log("peer_id  : " + data.user.peer_id)
       console.log("----------------------------------")
 
       socket.user = data.user;
-      socket.peer_id = data.peer_id
-      socket.peer_video_id = data.peer_video_id
+      socket.user.socket_id = socket.id;
 
-      let socket_ids = activeSockets.map(function(a) {
-        return a.id;
-      });
       let users = activeSockets.map(function(a) {
         return a.user;
       });
 
-      let peer_ids = activeSockets.map(function(a) {
-        return a.peer_id;
-      });
-
-      let peer_video_ids = activeSockets.map(function(a) {
-        return a.peer_video_id;
-      });
-
       socket.emit("update-user-list", {
-        socket_ids: socket_ids,
-        peer_ids: peer_ids,
-        peer_video_ids: peer_video_ids,
         users: users
       });
 
       activeSockets.push(socket);
 
       socket.broadcast.emit("update-user-list", {
-        socket_ids: [socket.id],
-        peer_ids: [socket.peer_id],
-        peer_video_ids: [socket.peer_video_id],
         users: [socket.user]
       });
 
@@ -63,8 +45,6 @@ console.log("Peerjs sevrer running on port : " + peerjs_port),
     socket.on("change_user_data", data => {
       socket.user = data.user;
       socket.broadcast.emit("update-user-list", {
-        socket_ids: [socket.id],
-        peer_ids: [socket.peer_id],
         users: [socket.user]
       });
     });
