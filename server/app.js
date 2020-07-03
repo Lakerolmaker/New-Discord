@@ -44,6 +44,7 @@ console.log("Peerjs sevrer running on port : " + peerjs_port),
 
     socket.on("change_user_data", data => {
       socket.user = data.user;
+      socket.user.socket_id = socket.id;
       socket.broadcast.emit("update-user-list", {
         users: [socket.user]
       });

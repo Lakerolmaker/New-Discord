@@ -247,12 +247,11 @@ function displayToCallConfirmation(socket_id, peer_id, peer_video_id) {
 
 
 function updateUserList(data) {
-  const activeUserContainer = document.getElementById("userlist");
   console.log(data)
   data.users.forEach(function(newuser, i) {
-    const alreadyExistingUser = document.getElementById(newuser.socketId);
+    const alreadyExistingUser = document.getElementById(newuser.socket_id);
     const is_friend = user.friendList.includes(newuser.mac_id);
-    if (!alreadyExistingUser && data.users[0].lenght != 0) {
+    if (!alreadyExistingUser) {
       if (is_friend) {
         $("#friendlist").append(createUserItemContainer(newuser, is_friend));
       } else {
@@ -260,7 +259,7 @@ function updateUserList(data) {
       }
     } else if (alreadyExistingUser) {
       //: updates the user element with the updated info
-      $("#" + socketId).replaceWith(createUserItemContainer(newuser, is_friend))
+      $("#" + newuser.socket_id).replaceWith(createUserItemContainer(newuser, is_friend))
     }
   });
 
