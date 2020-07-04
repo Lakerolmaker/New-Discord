@@ -69,7 +69,7 @@
 
 #sidebar ul.components {
   padding: 20px 0;
-  border-bottom: 1px solid #655a5a;
+  border-bottom: 1px solid var(--devider);
 }
 
 #sidebar ul p {

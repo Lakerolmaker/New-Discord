@@ -13,10 +13,12 @@ body {
   font-family: Whitney, Helvetica Neue, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   background-color: #36393f;
+  color: #dcddde;
   --background-primary: #36393f;
   --background-secondary: #2f3136;
   --background-secondary-alt: #292b2f;
   --text-normal: #dcddde;
+  --devider: #696969;
 }
 
 /* width */
@@ -48,6 +50,10 @@ body {
   color: #8a7e7e;
 }
 
+.toast{
+  pointer-events: none;
+}
+
 .left-side {
   background-color: #2c2f33;
 }
@@ -63,6 +69,70 @@ body {
   flex-direction: column;
 }
 
+#user_header {
+  height: 50px;
+  border-bottom: 1px solid var(--devider);
+}
+
+#user_header_name {
+  color: var(--text-normal);
+  font-size: 1.5rem;
+  margin-top: 3px;
+  width: 35%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  margin-left: 5px;
+  float: left;
+  margin-left: 50px;
+}
+
+#user_header_btn {
+  float: right;
+  width: 50%;
+  height: 100%;
+}
+
+#user_header_call_user_btn{
+  float: left;
+  padding-right: 10px;
+}
+
+#user_header_call_user_btn svg {
+  color: white;
+}
+
+#user_header_call_user_btn:hover * {
+  color: #8e8e8e;
+  cursor: pointer;
+}
+
+#user_header_call_user_btn:active *{
+border-width: 1px;
+border: 1px #cecdcd;
+border-style: groove;
+border-radius: 10px;
+}
+
+#user_header_call_user_video_btn{
+  float: left;
+}
+
+#user_header_call_user_video_btn svg {
+  color: white;
+}
+
+#user_header_call_user_video_btn:hover * {
+  color: #8e8e8e;
+  cursor: pointer;
+}
+
+#user_header_call_user_video_btn:active *{
+border-width: 1px;
+border: 1px #cecdcd;
+border-style: groove;
+border-radius: 10px;
+}
+
 #chat-input {
   background: var(--background-primary);
   border: none;
@@ -73,10 +143,10 @@ body {
   margin-top: 6px;
 }
 
-#chat_container{
-    flex: 1 1 auto;
-    overflow-y: auto;
-    height: 0px;
+#chat_container {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  height: 0px;
 }
 
 #chat {
@@ -145,6 +215,8 @@ body {
   background-color: #e8e9eb;
   transition: background-color 0.5s ease;
 }
+
+
 
 .active-user--selected {
   background-color: #fff;

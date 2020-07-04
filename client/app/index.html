@@ -65,7 +65,6 @@
       <img id="settings_icon" class="settings_icon" src="img/settings.png">
     </nav>
 
-
     <div class="right-side">
 
       <button type="button" id="sidebarCollapse" class="rounded navbar-btn">
@@ -73,6 +72,29 @@
         <span></span>
         <span></span>
       </button>
+
+      <div class="" aria-label="user header" id="user_header">
+
+        <div class="p" id="user_header_name">Global</div>
+
+        <div id="user_header_btn">
+          <div id="user_header_call_user_btn">
+            <svg x="0" y="0" class="icon-22AiRD" aria-hidden="false" width="40" height="40" viewBox="0 0 24 24">
+              <path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"
+                d="M11 5V3C16.515 3 21 7.486 21 13H19C19 8.589 15.411 5 11 5ZM17 13H15C15 10.795 13.206 9 11 9V7C14.309 7 17 9.691 17 13ZM11 11V13H13C13 11.896 12.105 11 11 11ZM14 16H18C18.553 16 19 16.447 19 17V21C19 21.553 18.553 22 18 22H13C6.925 22 2 17.075 2 11V6C2 5.447 2.448 5 3 5H7C7.553 5 8 5.447 8 6V10C8 10.553 7.553 11 7 11H6C6.063 14.938 9 18 13 18V17C13 16.447 13.447 16 14 16Z">
+              </path>
+            </svg>
+          </div>
+          <div id="user_header_call_user_video_btn">
+            <svg x="0" y="0" class="icon-22AiRD" aria-hidden="false" width="40" height="40" viewBox="0 0 24 24">
+              <path fill="currentColor"
+                d="M21.526 8.149C21.231 7.966 20.862 7.951 20.553 8.105L18 9.382V7C18 5.897 17.103 5 16 5H4C2.897 5 2 5.897 2 7V17C2 18.104 2.897 19 4 19H16C17.103 19 18 18.104 18 17V14.618L20.553 15.894C20.694 15.965 20.847 16 21 16C21.183 16 21.365 15.949 21.526 15.851C21.82 15.668 22 15.347 22 15V9C22 8.653 21.82 8.332 21.526 8.149Z">
+              </path>
+            </svg>
+          </div>
+        </div>
+
+      </div>
 
       <div class="" id="video_div">
 
@@ -136,104 +158,101 @@
           <form id="chat-form">
             <input id="chat-input" class="rounded" type="text" placeholder="Text to yeet" aria-label="Text to yeet">
           </form>
-
         </div>
-
-      </div>
-      <div>
       </div>
 
+    </div>
 
-      <div id="settings_page" class="w-100 h-100">
-        <button id="back_btn" class="setting_btn rounded"><i class="fa fa-close"></i></button>
-
-        <div id="settings_div">
-          <p class="h2">Settings</p>
-          <br>
-          <div class="input-group mb-3">
-            <div class="input-group-prepend">
-              <span class="input-group-text" id="inputGroup-sizing-default">Display name</span>
-            </div>
-            <input id="settings_displayname" type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+    <div class="modal fade" id="call_confirtmation" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="popupModalCenterTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title modal_text" id="popupModalLongTitle">New call</h5>
           </div>
-
-          <br>
-          <p class="h4">Avatar / Profile picture</p>
-          <input type="file" accept="image/*" class="rounded form-control-file" id="upload_avatar">
-        </div>
-      </div>
-
-
-      <div class="modal fade" id="call_confirtmation" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="popupModalCenterTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title modal_text" id="popupModalLongTitle">New call</h5>
-            </div>
-            <div class="modal-body modal_text" id="call_confirtmation_body">
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" id="reject_call_btn" data-dismiss="modal">Baba Booey</button>
-              <button type="button" id="answer_call_btn" class="btn btn-primary">Answer</button>
-            </div>
+          <div class="modal-body modal_text" id="call_confirtmation_body">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="reject_call_btn" data-dismiss="modal">Baba Booey</button>
+            <button type="button" id="answer_call_btn" class="btn btn-primary">Answer</button>
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <div class="modal fade" id="to_call_confirtmation" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="popupModalCenterTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title modal_text" id="to_call_confirtmation_title">Call User?</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body modal_text" id="to_call_confirtmation_body">
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" id="cancel_call_btn" data-dismiss="modal">Cancel</button>
-              <button type="button" id="call_user_btn" data-dismiss="modal" class="btn btn-primary">Call</button>
-            </div>
-          </div>
+  <div id="settings_page" class="w-100 h-100">
+    <button id="back_btn" class="setting_btn rounded"><i class="fa fa-close"></i></button>
+
+    <div id="settings_div">
+      <p class="h2">Settings</p>
+      <br>
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="inputGroup-sizing-default">Display name</span>
         </div>
+        <input id="settings_displayname" type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
       </div>
 
-      <div class="modal fade" id="displayname_modal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="nameModalCenterTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <p class="h5 modal-title modal_text" id="nameModalLongTitle">Display name</p>
-            </div>
-            <div class="modal-body">
-              <p class="modal_text">Enter a display name that you wish to use</p>
-              <input id="display_name" type="text" class="form-control modal_text" placeholder="displayname" aria-label="displayname" aria-describedby="basic-addon1">
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" id="connect_btn">Connect</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <br>
+      <p class="h4">Avatar / Profile picture</p>
+      <input type="file" accept="image/*" class="rounded form-control-file" id="upload_avatar">
+    </div>
+  </div>
 
-
-
-
-      <div class="toast" role="alert" id="toast1" aria-live="assertive" aria-atomic="true" style="position: absolute; top: 0; right: 0;">
-        <div class="toast-header">
-          <svg class="bd-placeholder-img rounded mr-2" width="20" height="20" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img">
-            <rect width="100%" height="100%" fill="#007aff"></rect>
-          </svg>
-          <strong class="mr-auto" id="toast1_title">Bootstrap</strong>
-          <small class="text-muted" id="toast1_time">11 mins ago</small>
-          <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+  <div class="modal fade" id="to_call_confirtmation" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="popupModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title modal_text" id="to_call_confirtmation_title">Call User?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="toast-body" id="toast1_body">
-          Hello, world! This is a toast message.
+        <div class="modal-body modal_text" id="to_call_confirtmation_body">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancel_call_btn" data-dismiss="modal">Cancel</button>
+          <button type="button" id="call_user_btn" data-dismiss="modal" class="btn btn-primary">Call</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="displayname_modal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="nameModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <p class="h5 modal-title modal_text" id="nameModalLongTitle">Display name</p>
+        </div>
+        <div class="modal-body">
+          <p class="modal_text">Enter a display name that you wish to use</p>
+          <input id="display_name" type="text" class="form-control modal_text" placeholder="displayname" aria-label="displayname" aria-describedby="basic-addon1">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="connect_btn">Connect</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+  <div class="toast" role="alert" id="toast1" aria-live="assertive" aria-atomic="true" style="position: absolute; top: 0; right: 0;">
+    <div class="toast-header">
+      <svg class="bd-placeholder-img rounded mr-2" width="20" height="20" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img">
+        <rect width="100%" height="100%" fill="#007aff"></rect>
+      </svg>
+      <strong class="mr-auto" id="toast1_title">Bootstrap</strong>
+      <small class="text-muted" id="toast1_time">11 mins ago</small>
+      <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="toast-body" id="toast1_body">
+      Hello, world! This is a toast message.
+    </div>
+  </div>
 
 
 
