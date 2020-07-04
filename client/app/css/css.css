@@ -13,7 +13,6 @@ body {
   font-family: Whitney, Helvetica Neue, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   background-color: #36393f;
-  color: #2f3136;
   --background-primary: #36393f;
   --background-secondary: #2f3136;
   --background-secondary-alt: #292b2f;
@@ -60,6 +59,8 @@ body {
   padding: 10px;
   min-height: 100vh;
   transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
 }
 
 #chat-input {
@@ -69,21 +70,32 @@ body {
   max-height: 144px;
   color: var(--text-normal);
   width: 100%;
+  margin-top: 6px;
+}
+
+#chat_container{
+    flex: 1 1 auto;
+    overflow-y: auto;
+    height: 0px;
 }
 
 #chat {
   overflow: auto;
   padding-top: 20px;
-  height: 80%;
 }
 
 #chat_div {
-  height: 100%;
+  flex-grow: 1;
 }
 
-#chat-form {
-  height: 18%;
+#inner_chat_div {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
 }
+
+#chat-form {}
 
 .message_body {
   height: auto;
@@ -102,6 +114,7 @@ body {
   top: 30px;
   left: 65px;
   word-break: break-word;
+  color: var(--text-normal);
 }
 
 .avatar {
@@ -147,6 +160,7 @@ body {
 
 #video_div {
   background: rgb(24, 25, 28);
+  height: 50%;
 }
 
 #remote-audio {

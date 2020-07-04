@@ -5,6 +5,7 @@
   top: 10;
   position: absolute;
   z-index: 100;
+  border-style: none;
 }
 
 #sidebarCollapse span {
