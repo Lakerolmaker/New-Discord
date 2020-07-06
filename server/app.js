@@ -81,7 +81,6 @@ console.log("Peerjs sevrer running on port : " + peerjs_port),
     });
 
     socket.on("send-to-user", data => {
-      console.log(data)
     socket.to(data.to).emit("send-to-user", {
         user: socket.user,
         message: data.message
