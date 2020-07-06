@@ -351,6 +351,7 @@ function loadUserInfoToScreen(userdata) {
 
 function loadHomePage() {
   user_page = null;
+  $("#chat_container_user").children().appendTo("#user_chats")
   if(!$("#global").is(":visible")){
     $("#user-page").hide(200, "linear", ev => {
       $("#global").show(200, "linear")
