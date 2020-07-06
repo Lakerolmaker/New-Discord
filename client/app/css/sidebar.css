@@ -40,6 +40,10 @@
   margin: 5px auto;
 }
 
+.active{
+  cursor: pointer;
+}
+
 .wrapper {
   display: flex;
   align-items: stretch;

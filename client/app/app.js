@@ -4,7 +4,8 @@ const {
   app,
   BrowserWindow,
   ipcMain,
-  desktopCapturer
+  desktopCapturer,
+  Notification
 } = require('electron') // http://electronjs.org/docs/api
 const path = require('path') // https://nodejs.org/api/path.html
 const fs = require('fs');
@@ -15,9 +16,13 @@ const Store = require('electron-store');
 const imgur = require('imgur');
 const isDev = require('electron-is-dev');
 const macaddress = require('macaddress');
+const ip = require('ip');
+
 const {
   autoUpdater
 } = require("electron-updater");
+
+console.log("Hewwo Uwu")
 
 if (isDev) {
   console.log('Running in development');
@@ -31,7 +36,7 @@ macaddress.all().then(function(all) {
   console.log("Mac adress : " + mac_address)
 });
 
-console.log("Hewwo Uwu")
+console.log("Ip4 adress : " + ip.address())
 
 let api_rawdata = fs.readFileSync('apiKeys.json');
 let apiKeys = JSON.parse(api_rawdata);
@@ -48,6 +53,9 @@ const store = new Store({
   }
 });
 var friendList = store.get('friendList');
+
+
+var isInFocus;
 
 app.once('ready', () => {
 
@@ -117,7 +125,18 @@ app.once('ready', () => {
     });
 
   });
+
+  window.on('blur', ev => {
+    isInFocus = false;
+  })
+
+  window.on('focus', ev => {
+    isInFocus = true;
+  })
+
 })
+
+
 
 ipcMain.on('set_display_name', (event, arg) => {
   store.set('display_name', arg);
@@ -138,6 +157,9 @@ ipcMain.on('get_user_info', (event, arg) => {
   user.mac_id = mac_address;
   user.display_name = store.get("display_name")
   user.avatar_url = store.get("avatar_url")
+  if(!user.avatar_url){
+      user.avatar_url = "img/avatar.jpg";
+  }
   user.friendList = store.get("friendList") || []
   event.reply('recive_user_info', user)
 })
@@ -152,6 +174,18 @@ ipcMain.on('upload_image', (event, arg) => {
       console.error(err.message);
     });
 });
+
+ipcMain.on('send_notification', (event, arg) => {
+  console.log(arg.body)
+  console.log(arg.title)
+  if (!isInFocus) {
+    new Notification({
+      title: arg.title,
+      body: arg.body,
+    }).show()
+  }
+});
+
 
 ipcMain.on('open_music_player', (event, arg) => {
   music_player = new BrowserWindow({

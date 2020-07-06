@@ -26,57 +26,51 @@ var data_connection_video;
 
 var socket_host = 'http://81.230.72.203';
 var socket_port = 3000;
-const socket = io( socket_host + ':' + socket_port);
+const socket = io(socket_host + ':' + socket_port);
 
 var user;
+var user_page = null;
 
 var callsound = new Audio(' ./sound/call sound.mp3');
 
 //: a boolean of wheather or not the user is muted
 var muted = false;
 
-function createUserItemContainer(user, is_friend) {
+function createUserItemContainer(newuser, is_friend) {
 
   $el = $('<li class="user_element"></li>')
-  $el.attr('id', user.socket_id);
+  $el.attr('id', newuser.socket_id);
 
-  if (user.avatar_url == undefined) {
-    $img = $('<img class="avatar small_avatar" src="img/avatar.jpg">')
-    $el.append($img)
-  } else {
-    $img = $('<img class="avatar small_avatar" src="' + user.avatar_url + '">')
-    $el.append($img)
-  }
+  $img = $('<img class="avatar small_avatar" src="' + newuser.avatar_url + '">')
+  $el.append($img)
 
-  $a = $('<a href="#">' + user.display_name + '</a>')
+  $a = $('<a href="#">' + newuser.display_name + '</a>')
+
+  //: when a user is clicked the users info is loaded on the right screen
   $a.on('click', ev => {
-    displayToCallConfirmation(user.socket_id, user.peer_id, user.peer_video_id)
+    loadUserInfoToScreen(newuser);
   })
+
   $el.append($a)
 
   //: Adds different context menues to the user element depeding on the user is a friend or not
-  if (is_friend) {
-    $drop_down = $('<div class="dropdown-menu dropdown-menu-sm" id="context-menu"></div>')
-    $add_friend = $('<a class="dropdown-item" href="#">Remove Friend</a>')
-    $add_friend.on('click', ev => {
-      removeFriend(user.mac_id, user)
-    })
-    $cancel = $('<a class="dropdown-item" href="#">Cancel</a>')
-    $drop_down.append($add_friend)
-    $drop_down.append($cancel)
-    $el.append($drop_down)
-  } else {
-    $drop_down = $('<div class="dropdown-menu dropdown-menu-sm" id="context-menu"></div>')
-    $add_friend = $('<a class="dropdown-item" href="#">Add Friend</a>')
-    $add_friend.on('click', ev => {
-      addFriend(user.mac_id, user)
-    })
-    $cancel = $('<a class="dropdown-item" href="#">Cancel</a>')
-    $drop_down.append($add_friend)
-    $drop_down.append($cancel)
-    $el.append($drop_down)
-  }
 
+  $drop_down = $('<div class="dropdown-menu dropdown-menu-sm" id="context-menu"></div>')
+  $add_friend = $('<a class="dropdown-item" href="#">Remove Friend</a>')
+  $add_friend.on('click', ev => {
+    if (is_friend) {
+      removeFriend(user.mac_id, newuser)
+    } else {
+      addFriend(user.mac_id, newuser)
+    }
+  })
+  $cancel = $('<a class="dropdown-item" href="#">Cancel</a>')
+  $drop_down.append($add_friend)
+  $drop_down.append($cancel)
+  $el.append($drop_down)
+
+
+  //: Adds right click options
   $el.on('contextmenu', function(e) {
     var top = e.pageY - 10;
     var left = e.pageX - 90;
@@ -93,7 +87,7 @@ function createUserItemContainer(user, is_friend) {
   return $el;
 }
 
-function createMessageItem(user, message_content) {
+function createMessageItem(newuser, message_content) {
   //: create the message body
   $el = $('<div class="message_body col-md-12"></div>')
 
@@ -101,19 +95,14 @@ function createMessageItem(user, message_content) {
   if (user.avatar_url == undefined) {
     $el.append('<img class="avatar" src="img/avatar.jpg"/>')
   } else {
-    $el.append('<img class="avatar" src="' + user.avatar_url + '"/>')
+    $el.append('<img class="avatar" src="' + newuser.avatar_url + '"/>')
   }
 
   //: add displayname of sender
-  $el.append('<p class="message_displayname">' + user.display_name + '</p>')
+  $el.append('<p class="message_displayname">' + newuser.display_name + '</p>')
 
   //: add message body
   $el.append('<div class="message_content">' + message_content + '</div>')
-
-  $("#chat").append($el)
-
-  //: Scroll to the bottom of the chat
-  $('#chat').scrollTop($('#chat')[0].scrollHeight);
 
   return $el;
 }
@@ -159,7 +148,8 @@ function callUser(peer_id, peer_video_id) {
 
   call_audio.on('stream', function(stream) {
     document.getElementById("remote-audio").srcObject = stream;
-    $("#call-ui").show(500)
+    $("#video_div").show(500)
+    $("#call-ui").show(1000)
   });
 
   //:  Video connection
@@ -228,23 +218,21 @@ function addFriend(friend_id, newuser) {
 
 function removeFriend(friend_id, newuser) {
   user.friendList = user.friendList.filter(id => id != friend_id);
-  window.api.request("remove_friend" , friend_id)
+  window.api.request("remove_friend", friend_id)
   $("#" + newuser.socket_id).remove()
   $("#userlist").append(createUserItemContainer(newuser, false));
 }
 
-function displayToCallConfirmation(socket_id, peer_id, peer_video_id) {
-  var display_name = $("#" + socket_id).find("a").text()
-  $("#to_call_confirtmation_title").html("Call User '" + display_name + "' ?")
-  $("#to_call_confirtmation_body").html("Do you wish to call '" + display_name + "' ?")
+function displayToCallConfirmation(user) {
+  $("#to_call_confirtmation_title").html("Call User '" + user.display_name + "' ?")
+  $("#to_call_confirtmation_body").html("Do you wish to call '" + user.display_name + "' ?")
 
   $("#call_user_btn").on('click', ev => {
-    callUser(peer_id, peer_video_id);
+    callUser(user.peer_id, user.peer_video_id);
   })
 
   $("#to_call_confirtmation").modal('show')
 }
-
 
 function updateUserList(data) {
   console.log(data)
@@ -261,6 +249,13 @@ function updateUserList(data) {
       //: updates the user element with the updated info
       $("#" + newuser.socket_id).replaceWith(createUserItemContainer(newuser, is_friend))
     }
+
+    //: create a userchat container
+    var id = "user_chat" + newuser.socket_id
+    if (!$("#" + id).length) {
+      $("#user_chats").append($('<div class="chat" id="' + id + '"></div>'))
+    }
+
   });
 
 }
@@ -278,6 +273,89 @@ function toast(heading, text) {
     position: 'top-right', // bottom-left or bottom-right or bottom-center or top-left or top-right or top-center or mid-center or an object representing the left, right, top, bottom values
   })
 
+}
+
+function sendNotification(title, body) {
+  window.api.request("send_notification", {
+    "title": title,
+    "body": body
+  })
+}
+
+function getMessage() {
+  if (user_page == null) {
+    return $("#chat-input-global").val()
+  } else {
+    return $("#chat-input-user").val()
+  }
+}
+
+function clearMessage() {
+  if (user_page == null) {
+    $("#chat-input-global").val("")
+  } else {
+    $("#chat-input-user").val("")
+  }
+}
+
+//: Wheather to add to the global or a users chat.
+function addMessageToScreen($el, addToGlobal, userdata) {
+  if (addToGlobal == true) {
+    $("#chat-global").append($el)
+
+    //: Scroll to the bottom of the chat
+    $("#chat-global").scrollTop($('#chat-global')[0].scrollHeight);
+  } else {
+
+    var id = "user_chat" + userdata.socket_id
+    $("#" + id).append($el)
+
+    //: Scroll to the bottom of the chat
+    $("#" + id).scrollTop($("#" + id).scrollHeight);
+  }
+}
+
+function loadUserInfoToScreen(userdata) {
+
+  //: adds the current user to a variable
+  user_page = userdata;
+  var id = "user_chat" + userdata.socket_id
+
+  $("#user_header_name").text(userdata.display_name)
+
+  //: Move chat contents to the screen.
+  //: if there is a chat on screen.
+  if($("#chat_container_user").children().lenght){
+    $("#chat_container_user").children().appendTo("#user_chats")
+  }
+  $("#" + id).appendTo("#chat_container_user");
+
+
+  //: when the call button is pressed
+  $("#user_header_call_user_btn").on('click', ev => {
+    displayToCallConfirmation(userdata)
+  })
+
+  //: when the video call button is pressed
+  $("#user_header_call_user_video_btn").on('click', ev => {
+    toast("Info", "Not implemented yet")
+  })
+
+  if($("#global").is(":visible")){
+    $("#global").hide(200, "linear", ev => {
+      $("#user-page").show(200, "linear")
+    })
+  }
+
+}
+
+function loadHomePage() {
+  user_page = null;
+  if(!$("#global").is(":visible")){
+    $("#user-page").hide(200, "linear", ev => {
+      $("#global").show(200, "linear")
+    })
+  }
 }
 
 function connectToNetwork() {
@@ -306,6 +384,7 @@ function disconnect_from_call() {
   destroy_stream(remoteStream_audio)
   destroy_stream(remoteStream_video)
   $("#call-ui").hide(500)
+  $("#video_div").hide(1000)
   $("#local-video").hide(500)
   getAudioStream().then(strem => {
     localStream_audio = strem;
@@ -412,7 +491,13 @@ function addSocketEvents() {
   });
 
   socket.on("send-message", data => {
-    createMessageItem(data.user, data.message)
+    sendNotification(data.user.display_name, data.message)
+    addMessageToScreen(createMessageItem(data.user, data.message), true)
+  });
+
+  socket.on("send-to-user", data => {
+    sendNotification(data.user.display_name, data.message)
+    addMessageToScreen(createMessageItem(data.user, data.message), false, data.user)
   });
 }
 
@@ -450,7 +535,8 @@ function addPeerjsEvents() {
       console.log("Call has been answered, making a connection")
       //: answer the call
       call.answer(localStream_audio);
-      $("#call-ui").show(500)
+      $("#video_div").show(500)
+      $("#call-ui").show(1000)
     })
 
     $("#reject_call_btn").on('click', function(e) {
@@ -547,6 +633,10 @@ function addClickEvents() {
     $(this).toggleClass('active');
   });
 
+  $('#home_btn').on('click', function() {
+    loadHomePage();
+  });
+
   $("#connect_btn").on('click', function(e) {
     if ($("#display_name").val() != "") {
       $('#displayname_modal').modal('hide')
@@ -582,6 +672,31 @@ function addClickEvents() {
 
 }
 
+function addSubmitEvent() {
+  $(".chat-form").on("submit", ev => {
+    ev.preventDefault()
+    console.log("called")
+    var message = getMessage()
+    clearMessage()
+    if (message != "") {
+
+      if (user_page == null) {
+        socket.emit('send-message', {
+          message: message
+        });
+        addMessageToScreen(createMessageItem(user, message), true)
+      } else {
+        socket.emit('send-to-user', {
+          message: message,
+          to: user_page.socket_id
+        });
+        addMessageToScreen(createMessageItem(user, message), false , user_page)
+      }
+    }
+  })
+
+}
+
 function addClientBackendEvents() {
   window.api.response("recive_user_info", (event, arg) => {
     user = arg;
@@ -606,28 +721,18 @@ function addClientBackendEvents() {
 }
 
 $(document).ready(function() {
+  $("#main").hide()
 
   $("#call-ui").hide()
-  $("#main").hide()
   $("#video_div").hide()
-
+  $("#user-page").hide()
 
 
   addSocketEvents()
   addPeerjsEvents()
   addClickEvents()
   addClientBackendEvents()
-
-  $("#chat-form").on('submit', function(e) {
-    e.preventDefault();
-    if ($("#chat-input").val() != "") {
-      socket.emit('send-message', {
-        message: $("#chat-input").val()
-      });
-      createMessageItem(user, $("#chat-input").val())
-      $("#chat-input").val("")
-    }
-  })
+  addSubmitEvent()
 
   //: initializes the audio stream
   getAudioStream().then(strem => {

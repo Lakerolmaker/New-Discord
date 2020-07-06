@@ -38,6 +38,9 @@
 
       <ul class="list-unstyled components">
         <p>V0.2.0</p>
+        <li class="active" id="home_btn">
+          <a>Home</a>
+        </li>
         <li class="active">
           <a href="#userlist" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">All Users</a>
           <ul class="collapse list-unstyled" id="userlist">
@@ -65,7 +68,7 @@
       <img id="settings_icon" class="settings_icon" src="img/settings.png">
     </nav>
 
-    <div class="right-side">
+    <div class="right-side" id="global">
 
       <button type="button" id="sidebarCollapse" class="rounded navbar-btn">
         <span></span>
@@ -75,9 +78,39 @@
 
       <div class="" aria-label="user header" id="user_header">
 
-        <div class="p" id="user_header_name">Global</div>
+        <div class="p user_header_name">Global Chat</div>
+      </div>
 
-        <div id="user_header_btn">
+      <!-- Chat div -->
+      <div  class="chat_div">
+        <div class="inner_chat_div">
+
+          <div class="chat_container">
+            <div class="chat" id="chat-global"></div>
+          </div>
+
+          <!-- chat input -->
+          <form class="chat-form">
+            <input id="chat-input-global" class="rounded chat-input" type="text" placeholder="Text to yeet" aria-label="Text to yeet">
+          </form>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="right-side" id="user-page">
+
+      <button type="button" id="sidebarCollapse" class="rounded navbar-btn">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="" aria-label="user header" id="user_header">
+
+        <div class="p user_header_name" id="user_header_name">Display name</div>
+
+        <div id="user_header_btns">
           <div id="user_header_call_user_btn">
             <svg x="0" y="0" class="icon-22AiRD" aria-hidden="false" width="40" height="40" viewBox="0 0 24 24">
               <path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"
@@ -103,7 +136,6 @@
           <video autoplay muted class="local-video" id="local-video"></video>
           <video autoplay class="" id="remote-audio"></video>
           <video autoplay class="container" id="remote-video"></video>
-
 
           <div id="call-ui">
             <div><button id="turn_on_camera_btn" aria-label="Turn On Camera" type="button" class="centerButton centerButton_deactive">
@@ -147,21 +179,23 @@
       </div>
 
       <!-- Chat div -->
-      <div class="" id="chat_div">
-        <div id="inner_chat_div">
+      <div  class="chat_div">
+        <div class="inner_chat_div">
 
-          <div id="chat_container">
-            <div id="chat"></div>
+          <div class="chat_container" id="chat_container_user">
+            <div class="chat" id="chat-user"></div>
           </div>
 
           <!-- chat input -->
-          <form id="chat-form">
-            <input id="chat-input" class="rounded" type="text" placeholder="Text to yeet" aria-label="Text to yeet">
+          <form class="chat-form">
+            <input id="chat-input-user" class="rounded chat-input" type="text" placeholder="Text to yeet" aria-label="Text to yeet">
           </form>
         </div>
       </div>
 
     </div>
+
+    <div id="user_chats"></div>
 
     <div class="modal fade" id="call_confirtmation" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="popupModalCenterTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
