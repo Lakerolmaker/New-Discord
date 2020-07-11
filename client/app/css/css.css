@@ -50,7 +50,7 @@ body {
   color: #8a7e7e;
 }
 
-.toast{
+.toast {
   pointer-events: none;
 }
 
@@ -69,8 +69,8 @@ body {
   flex-direction: column;
 }
 
-#user_chats{
-  display:none;
+#user_chats {
+  display: none;
 }
 
 #user_header {
@@ -96,7 +96,7 @@ body {
   height: 100%;
 }
 
-#user_header_call_user_btn{
+#user_header_call_user_btn {
   float: left;
   padding-right: 10px;
 }
@@ -110,14 +110,14 @@ body {
   cursor: pointer;
 }
 
-#user_header_call_user_btn:active *{
-border-width: 1px;
-border: 1px #cecdcd;
-border-style: groove;
-border-radius: 10px;
+#user_header_call_user_btn:active * {
+  border-width: 1px;
+  border: 1px #cecdcd;
+  border-style: groove;
+  border-radius: 10px;
 }
 
-#user_header_call_user_video_btn{
+#user_header_call_user_video_btn {
   float: left;
 }
 
@@ -130,11 +130,11 @@ border-radius: 10px;
   cursor: pointer;
 }
 
-#user_header_call_user_video_btn:active *{
-border-width: 1px;
-border: 1px #cecdcd;
-border-style: groove;
-border-radius: 10px;
+#user_header_call_user_video_btn:active * {
+  border-width: 1px;
+  border: 1px #cecdcd;
+  border-style: groove;
+  border-radius: 10px;
 }
 
 .chat-input {
@@ -155,7 +155,6 @@ border-radius: 10px;
 
 .chat {
   overflow: auto;
-  padding-top: 20px;
 }
 
 .chat_div {
@@ -172,23 +171,61 @@ border-radius: 10px;
 #chat-form {}
 
 .message_body {
-  height: auto;
-  min-height: 90px;
+  min-height: 65px;
+  margin-top: 40px;
+  display: flex;
+}
+
+.inner_message_container {
+  flex-grow: 1;
 }
 
 .message_displayname {
-  float: left;
   padding-left: 10px;
-  padding-top: 2px;
+  padding-top: 4px;
   color: #fff;
+  margin: 0;
 }
 
 .message_content {
-  position: absolute;
-  top: 30px;
-  left: 65px;
+  padding-left: 10px;
   word-break: break-word;
   color: var(--text-normal);
+}
+
+.preview_body {
+  background-color: #2f3136;
+  border-left: 4px solid #7b7b7b;
+  margin-top: 15px;
+  padding: 10px;
+}
+
+.preview_img_small {
+  width: 80px;
+  height: 80px;
+  margin-bottom:5px;
+}
+
+.preview_img_large {
+  width: 50%;
+  margin-right: 50%;
+  margin-bottom:5px;
+}
+
+.preview_site_name{
+  margin-top: 5px;
+}
+
+.preview_link_container {
+  margin-top: 5px;
+}
+
+.preview_description {
+  margin-top: 10px;
+}
+
+.preview_link {
+  font-weight: 600;
 }
 
 .avatar {
@@ -196,7 +233,6 @@ border-radius: 10px;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  overflow: hidden;
 }
 
 .small_avatar {
@@ -219,8 +255,6 @@ border-radius: 10px;
   background-color: #e8e9eb;
   transition: background-color 0.5s ease;
 }
-
-
 
 .active-user--selected {
   background-color: #fff;

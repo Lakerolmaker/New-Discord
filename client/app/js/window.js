@@ -54,6 +54,27 @@ function createUserItemContainer(newuser, is_friend) {
   $el.append($a)
 
   //: Adds different context menues to the user element depeding on the user is a friend or not
+  if (is_friend) {
+    $drop_down = $('<div class="dropdown-menu dropdown-menu-sm" id="context-menu"></div>')
+    $add_friend = $('<a class="dropdown-item" href="#">Remove Friend</a>')
+    $add_friend.on('click', ev => {
+      removeFriend(user.mac_id, newuser)
+    })
+    $cancel = $('<a class="dropdown-item" href="#">Cancel</a>')
+    $drop_down.append($add_friend)
+    $drop_down.append($cancel)
+    $el.append($drop_down)
+  } else {
+    $drop_down = $('<div class="dropdown-menu dropdown-menu-sm" id="context-menu"></div>')
+    $add_friend = $('<a class="dropdown-item" href="#">Add Friend</a>')
+    $add_friend.on('click', ev => {
+      addFriend(user.mac_id, newuser)
+    })
+    $cancel = $('<a class="dropdown-item" href="#">Cancel</a>')
+    $drop_down.append($add_friend)
+    $drop_down.append($cancel)
+    $el.append($drop_down)
+  }
 
   $drop_down = $('<div class="dropdown-menu dropdown-menu-sm" id="context-menu"></div>')
   $add_friend = $('<a class="dropdown-item" href="#">Remove Friend</a>')
@@ -98,11 +119,117 @@ function createMessageItem(newuser, message_content) {
     $el.append('<img class="avatar" src="' + newuser.avatar_url + '"/>')
   }
 
+  $container = $('<div class="inner_message_container"></div>')
+
   //: add displayname of sender
-  $el.append('<p class="message_displayname">' + newuser.display_name + '</p>')
+  $container.append('<p class="message_displayname">' + newuser.display_name + '</p>')
 
   //: add message body
-  $el.append('<div class="message_content">' + message_content + '</div>')
+  $container.append('<div class="message_content">' + message_content + '</div>')
+  $el.append($container)
+  return $el;
+}
+
+function getYoutubeVideoId(url) {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+
+  return (match && match[2].length === 11) ?
+    match[2] :
+    null;
+}
+
+
+
+function createPreviewItem(data) {
+  console.log(data)
+
+  //: create the message body
+  $el = $('<div class="preview_body col-md-12"></div>')
+
+  //: Youtube logic
+
+  if (data.siteName == "YouTube") {
+    const videoId = getYoutubeVideoId(data.url);
+    //$player = $('<video tabindex="-1"  autoplay src="blob:https://www.youtube.com/1b12d8a5-5306-453c-8871-70693133fea8" style="width: 400px; height: 225px;"></video>')
+
+    $player = $('<iframe width="560" height="315" src="https://www.youtube.com/embed/' + videoId + '" frameborder="0" allowfullscreen></iframe>')
+    $el.append($player)
+  } else if (data.contentType.includes("text/html")) {
+
+    if (data.mediaType == "article") {
+      if (data.images[0]) {
+        $img = $('<img class="rounded preview_img_large" src="' + data.images[0] + '">')
+        $el.append($img)
+      }
+
+      if (data.siteName != undefined) {
+        $site_name = $('<div class="p preview_site_name" > ' + data.siteName + '</div>')
+        $el.append($site_name)
+      }
+
+      if (data.url && data.title) {
+        $div = $('<div class="preview_link_container" </div>')
+        $a = $('<a class="preview_link" rel="noreferrer noopener" href="' + data.url + '"> ' + data.title + '</a>')
+        $div.append($a)
+        $el.append($div)
+      }
+
+      if (data.description) {
+        $description = $('<div class="p preview_description" > ' + data.description + '</div>')
+        $el.append($description)
+      }
+
+    } else {
+      if (data.images[0]) {
+        $img = $('<img class="rounded preview_img_small" src="' + data.images[0] + '">')
+        $el.append($img)
+      }
+
+      if (data.url && data.title) {
+        $div = $('<div class="preview_link_container" </div>')
+        $a = $('<a class="preview_link" rel="noreferrer noopener" href="' + data.url + '"> ' + data.title + '</a>')
+        $div.append($a)
+        $el.append($div)
+      }
+
+      if (data.description) {
+        $description = $('<div class="p preview_description" > ' + data.description + '</div>')
+        $el.append($description)
+      }
+    }
+  } else if (data.contentType.includes("asdakjsndkjasndkjasndkjn")) {
+
+    if (data.url) {
+      $img = $('<img class="rounded preview_img_large" src="' + data.url + '">')
+      $el.append($img)
+    }
+
+  } else {
+
+    if (data.images != undefined) {
+      $img = $('<img class="rounded preview_img_small" src="' + data.images[0] + '">')
+      $el.append($img)
+    }
+
+    if (data.url != undefined && data.title  != undefined) {
+      $div = $('<div class="preview_link_container" </div>')
+      $a = $('<a class="preview_link" rel="noreferrer noopener" href="' + data.url + '"> ' + data.title + '</a>')
+      $div.append($a)
+      $el.append($div)
+    }else if(data.url != undefined){
+      $div = $('<div class="preview_link_container" </div>')
+      $a = $('<a class="preview_link" rel="noreferrer noopener" href="' + data.url + '"> ' + "Link" + '</a>')
+      $div.append($a)
+      $el.append($div)
+    }
+
+    if (data.description  != undefined) {
+      $description = $('<div class="p preview_description" > ' + data.description + '</div>')
+      $el.append($description)
+    }
+
+  }
 
   return $el;
 }
@@ -262,7 +389,6 @@ function updateUserList(data) {
 
 function toast(heading, text) {
   //  $.toast().reset('all');
-
   $.toast({
     text: text, // Text that is to be shown in the toast
     heading: heading, // Optional heading to be shown on the toast
@@ -304,19 +430,43 @@ function addMessageToScreen($el, addToGlobal, userdata) {
     $("#chat-global").append($el)
 
     //: Scroll to the bottom of the chat
-    $("#chat-global").scrollTop($('#chat-global')[0].scrollHeight);
+    $el[0].scrollIntoView();
   } else {
 
     var id = "user_chat" + userdata.socket_id
     $("#" + id).append($el)
 
     //: Scroll to the bottom of the chat
-    $("#" + id).scrollTop($("#" + id).scrollHeight);
+    $el[0].scrollIntoView();
+  }
+}
+
+
+function isValidURL(str) {
+  var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
+    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+    '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+    '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+    '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+  return !!pattern.test(str);
+}
+
+function messageHandler(user, message, addToGlobal, otherUser) {
+  //: if the message is a url we add a preview to the message
+  if (!message.startsWith("http")) {
+    addMessageToScreen(createMessageItem(user, message), addToGlobal, otherUser)
+  } else if (isValidURL(message)) {
+    var data = {}
+    data.user = user;
+    data.message = message;
+    data.addToGlobal = addToGlobal;
+    data.otherUser = otherUser;
+    window.api.request("get_web_data", data)
   }
 }
 
 function loadUserInfoToScreen(userdata) {
-
   //: adds the current user to a variable
   user_page = userdata;
   var id = "user_chat" + userdata.socket_id
@@ -325,7 +475,7 @@ function loadUserInfoToScreen(userdata) {
 
   //: Move chat contents to the screen.
   //: if there is a chat on screen.
-  if($("#chat_container_user").children().lenght){
+  if ($("#chat_container_user").children().lenght) {
     $("#chat_container_user").children().appendTo("#user_chats")
   }
   $("#" + id).appendTo("#chat_container_user");
@@ -341,7 +491,7 @@ function loadUserInfoToScreen(userdata) {
     toast("Info", "Not implemented yet")
   })
 
-  if($("#global").is(":visible")){
+  if ($("#global").is(":visible")) {
     $("#global").hide(200, "linear", ev => {
       $("#user-page").show(200, "linear")
     })
@@ -352,7 +502,7 @@ function loadUserInfoToScreen(userdata) {
 function loadHomePage() {
   user_page = null;
   $("#chat_container_user").children().appendTo("#user_chats")
-  if(!$("#global").is(":visible")){
+  if (!$("#global").is(":visible")) {
     $("#user-page").hide(200, "linear", ev => {
       $("#global").show(200, "linear")
     })
@@ -390,7 +540,6 @@ function disconnect_from_call() {
   getAudioStream().then(strem => {
     localStream_audio = strem;
   })
-
 }
 
 //: Destroys a stream
@@ -440,7 +589,6 @@ async function get_WindowCapure_sources() {
   return window.api.get_desktopCapturer().getSources({
     types: ['window', 'screen'],
     fetchWindowIcons: true
-
   })
 }
 
@@ -493,12 +641,12 @@ function addSocketEvents() {
 
   socket.on("send-message", data => {
     sendNotification(data.user.display_name, data.message)
-    addMessageToScreen(createMessageItem(data.user, data.message), true)
+    messageHandler(data.user, data.message, true)
   });
 
   socket.on("send-to-user", data => {
     sendNotification(data.user.display_name, data.message)
-    addMessageToScreen(createMessageItem(data.user, data.message), false, data.user)
+    messageHandler(data.user, data.message, false, data.user)
   });
 }
 
@@ -671,27 +819,31 @@ function addClickEvents() {
     }
   });
 
+  // open all links in a external browser
+  $(document).on('click', 'a[href^="http"]', function(event) {
+    event.preventDefault();
+    window.api.open_link_in_browser(this.href)
+  });
+
 }
 
 function addSubmitEvent() {
   $(".chat-form").on("submit", ev => {
     ev.preventDefault()
-    console.log("called")
     var message = getMessage()
     clearMessage()
     if (message != "") {
-
       if (user_page == null) {
         socket.emit('send-message', {
           message: message
         });
-        addMessageToScreen(createMessageItem(user, message), true)
+        messageHandler(user, message, true)
       } else {
         socket.emit('send-to-user', {
           message: message,
           to: user_page.socket_id
         });
-        addMessageToScreen(createMessageItem(user, message), false , user_page)
+        messageHandler(user, message, false, user_page)
       }
     }
   })
@@ -712,13 +864,20 @@ function addClientBackendEvents() {
     }
   })
 
+  window.api.response("get_web_data", (event, arg) => {
+    addMessageToScreen(createMessageItem(arg.user, arg.message), arg.addToGlobal, arg.otherUser)
+    if (arg.web_data != undefined) {
+      addMessageToScreen(createPreviewItem(arg.web_data), arg.addToGlobal, arg.otherUser)
+    } else {
+      console.log("no data given")
+    }
+  })
+
   window.api.response("message", (event, arg) => {
     console.log(arg)
   })
 
-  window.api.response("get_WindowCapure_Stream", (event, arg) => {
-    console.log(arg)
-  })
+
 }
 
 $(document).ready(function() {

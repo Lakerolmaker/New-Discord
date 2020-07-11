@@ -17,12 +17,16 @@ const imgur = require('imgur');
 const isDev = require('electron-is-dev');
 const macaddress = require('macaddress');
 const ip = require('ip');
+const version = require('../package.json').version;
+const getLinkPreview = require('link-preview-js');
 
 const {
   autoUpdater
 } = require("electron-updater");
 
 console.log("Hewwo Uwu")
+console.log("Version: " + version);
+
 
 if (isDev) {
   console.log('Running in development');
@@ -157,8 +161,8 @@ ipcMain.on('get_user_info', (event, arg) => {
   user.mac_id = mac_address;
   user.display_name = store.get("display_name")
   user.avatar_url = store.get("avatar_url")
-  if(!user.avatar_url){
-      user.avatar_url = "img/avatar.jpg";
+  if (!user.avatar_url) {
+    user.avatar_url = "img/avatar.jpg";
   }
   user.friendList = store.get("friendList") || []
   event.reply('recive_user_info', user)
@@ -176,14 +180,21 @@ ipcMain.on('upload_image', (event, arg) => {
 });
 
 ipcMain.on('send_notification', (event, arg) => {
-  console.log(arg.body)
-  console.log(arg.title)
   if (!isInFocus) {
     new Notification({
       title: arg.title,
       body: arg.body,
     }).show()
   }
+});
+
+ipcMain.on('get_web_data', (event, arg) => {
+  getLinkPreview.getLinkPreview(arg.message).then(data => {
+    arg.web_data = data;
+    event.reply('get_web_data', arg)
+  }).catch(error => {
+    event.reply('get_web_data', arg)
+  });
 });
 
 
