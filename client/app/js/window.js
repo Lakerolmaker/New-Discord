@@ -2,36 +2,36 @@ console.log('%c New Deeiscordo', 'font-weight: bold; font-size: 50px;color: red;
 console.log('%c Please do not try to break my program, plz', 'font-weight: bold ;  text-shadow: 2px 2px 5px red;');
 
 
-var peerjs_host = "81.230.72.203";
+var server_address = "81.230.72.203";
+var socket_port = 3000;
 var peerjs_port = 3001;
-const peer = new Peer({
-  host: peerjs_host,
-  port: peerjs_port,
-  path: '/myapp'
-});
 
-const peer_video = new Peer({
-  host: peerjs_host,
-  port: peerjs_port,
-  path: '/myapp'
-});
+var peerjs_host;
+var peer_video;
+
+var socket_host;
+var socket;
+
+const server_post_port = 3002
+const server_post_path = "/img_upload"
+
+var call_audio;
+var call_video;
 
 var localStream_audio;
 var localStream_video;
 var remoteStream_audio;
 var remoteStream_video;
 
-var data_connection_audio;
-var data_connection_video;
-
-var socket_host = 'http://81.230.72.203';
-var socket_port = 3000;
-const socket = io(socket_host + ':' + socket_port);
+var conn_audio;
+var conn_video;
 
 var user;
 var user_page = null;
 
-var callsound = new Audio(' ./sound/call sound.mp3');
+var callsound = new Audio('./sound/call sound.mp3');
+var disturb_sound = new Audio('./sound/disturb_sound.mp3');
+
 
 //: a boolean of wheather or not the user is muted
 var muted = false;
@@ -44,7 +44,7 @@ function createUserItemContainer(newuser, is_friend) {
   $img = $('<img class="avatar small_avatar" src="' + newuser.avatar_url + '">')
   $el.append($img)
 
-  $a = $('<a href="#">' + newuser.display_name + '</a>')
+  $a = $('<a class="user_display_name" href="#">' + newuser.display_name + '</a>')
 
   //: when a user is clicked the users info is loaded on the right screen
   $a.on('click', ev => {
@@ -75,21 +75,6 @@ function createUserItemContainer(newuser, is_friend) {
     $drop_down.append($cancel)
     $el.append($drop_down)
   }
-
-  $drop_down = $('<div class="dropdown-menu dropdown-menu-sm" id="context-menu"></div>')
-  $add_friend = $('<a class="dropdown-item" href="#">Remove Friend</a>')
-  $add_friend.on('click', ev => {
-    if (is_friend) {
-      removeFriend(user.mac_id, newuser)
-    } else {
-      addFriend(user.mac_id, newuser)
-    }
-  })
-  $cancel = $('<a class="dropdown-item" href="#">Cancel</a>')
-  $drop_down.append($add_friend)
-  $drop_down.append($cancel)
-  $el.append($drop_down)
-
 
   //: Adds right click options
   $el.on('contextmenu', function(e) {
@@ -139,8 +124,6 @@ function getYoutubeVideoId(url) {
     null;
 }
 
-
-
 function createPreviewItem(data) {
   console.log(data)
 
@@ -151,8 +134,6 @@ function createPreviewItem(data) {
 
   if (data.siteName == "YouTube") {
     const videoId = getYoutubeVideoId(data.url);
-    //$player = $('<video tabindex="-1"  autoplay src="blob:https://www.youtube.com/1b12d8a5-5306-453c-8871-70693133fea8" style="width: 400px; height: 225px;"></video>')
-
     $player = $('<iframe width="560" height="315" src="https://www.youtube.com/embed/' + videoId + '" frameborder="0" allowfullscreen></iframe>')
     $el.append($player)
   } else if (data.contentType.includes("text/html")) {
@@ -198,7 +179,7 @@ function createPreviewItem(data) {
         $el.append($description)
       }
     }
-  } else if (data.contentType.includes("asdakjsndkjasndkjasndkjn")) {
+  } else if (data.contentType.includes("image")) {
 
     if (data.url) {
       $img = $('<img class="rounded preview_img_large" src="' + data.url + '">')
@@ -212,19 +193,19 @@ function createPreviewItem(data) {
       $el.append($img)
     }
 
-    if (data.url != undefined && data.title  != undefined) {
+    if (data.url != undefined && data.title != undefined) {
       $div = $('<div class="preview_link_container" </div>')
       $a = $('<a class="preview_link" rel="noreferrer noopener" href="' + data.url + '"> ' + data.title + '</a>')
       $div.append($a)
       $el.append($div)
-    }else if(data.url != undefined){
+    } else if (data.url != undefined) {
       $div = $('<div class="preview_link_container" </div>')
       $a = $('<a class="preview_link" rel="noreferrer noopener" href="' + data.url + '"> ' + "Link" + '</a>')
       $div.append($a)
       $el.append($div)
     }
 
-    if (data.description  != undefined) {
+    if (data.description != undefined) {
       $description = $('<div class="p preview_description" > ' + data.description + '</div>')
       $el.append($description)
     }
@@ -242,19 +223,15 @@ function callUser(peer_id, peer_video_id) {
   })
 
   peer.on('disconnected', function(ev) {
-    console.log("connection disconnecting")
+    console.log("Connection disconnected")
     disconnect_from_call();
   })
 
-  var conn_audio = peer.connect(peer_id);
-  data_connection_audio = conn_audio;
+  conn_audio = peer.connect(peer_id);
   conn_audio.on('open', function() {
     // Receive messages
     conn_audio.on('data', function(data) {
       console.log('Received', data);
-      if (data == "disconnect") {
-        disconnect_from_call()
-      }
     });
 
     conn_audio.send('ping');
@@ -270,8 +247,12 @@ function callUser(peer_id, peer_video_id) {
     disconnect_from_call();
   })
 
-  var call_audio = peer.call(peer_id,
-    localStream_audio)
+  call_audio = peer.call(peer_id, localStream_audio)
+
+  call_audio.on('close', function() {
+    console.log("Call has ended")
+    disconnect_from_call();
+  });
 
   call_audio.on('stream', function(stream) {
     document.getElementById("remote-audio").srcObject = stream;
@@ -280,8 +261,7 @@ function callUser(peer_id, peer_video_id) {
   });
 
   //:  Video connection
-  var conn_video = peer_video.connect(peer_video_id);
-  data_connection_video = conn_video;
+  conn_video = peer_video.connect(peer_video_id);
   conn_video.on('open', function() {
     // Receive messages
     conn_video.on('data', function(data) {
@@ -441,7 +421,6 @@ function addMessageToScreen($el, addToGlobal, userdata) {
   }
 }
 
-
 function isValidURL(str) {
   var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
     '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
@@ -481,6 +460,14 @@ function loadUserInfoToScreen(userdata) {
   $("#" + id).appendTo("#chat_container_user");
 
 
+  //: when the disturb user button is pressed
+  $("#user_header_disturb_user_btn").on('click', ev => {
+    socket.emit('disturb_user', {
+      to: user_page.socket_id,
+      user: user
+    });
+  })
+
   //: when the call button is pressed
   $("#user_header_call_user_btn").on('click', ev => {
     displayToCallConfirmation(userdata)
@@ -509,6 +496,7 @@ function loadHomePage() {
   }
 }
 
+//: Adds
 function connectToNetwork() {
   if (peer._id != null && display_name != null && peer_video._id != null) {
     console.log("connecting to network")
@@ -527,8 +515,9 @@ function connectToNetwork() {
 //: The audio stream is then reinitialized.
 function disconnect_from_call() {
   console.log("disconnecting from call")
-  data_connection_audio.close();
-  data_connection_video.close();
+  call_audio.close()
+  conn_audio.close();
+  conn_video.close();
   document.getElementById("remote-video").srcObject = null
   destroy_stream(localStream_audio)
   destroy_stream(localStream_video)
@@ -648,33 +637,38 @@ function addSocketEvents() {
     sendNotification(data.user.display_name, data.message)
     messageHandler(data.user, data.message, false, data.user)
   });
+
+  socket.on("disturb_user", data => {
+    disturb_sound.play()
+  });
 }
 
 function addPeerjsEvents() {
   //: a new copnnection from another computer to this one
   peer.on('connection', function(conn) {
-    data_connection_audio = conn;
+    conn_audio = conn;
 
     conn.on('data', function(data) {
       console.log('Received', data);
-      if (data == "disconnect") {
-        disconnect_from_call()
-      }
-      conn.send("pong")
-    });
 
-    conn.on('disconnected', function(data) {
-      disconnect_from_call()
+      conn.send("pong")
     });
 
     conn.on('close', function(ev) {
       console.log("connection closed")
       disconnect_from_call();
     })
+
+    conn.on('disconnected', function(data) {
+      console.log("connection disconnected")
+      disconnect_from_call()
+    });
+
   });
 
   //: someone is calling this computer
   peer.on('call', function(call) {
+    call_audio = call;
 
     $("#call_confirtmation_body").text(` wants to call you. Do accept this call?`)
 
@@ -683,7 +677,7 @@ function addPeerjsEvents() {
       stopReciveCallSound()
       console.log("Call has been answered, making a connection")
       //: answer the call
-      call.answer(localStream_audio);
+      call_audio.answer(localStream_audio);
       $("#video_div").show(500)
       $("#call-ui").show(1000)
     })
@@ -691,16 +685,21 @@ function addPeerjsEvents() {
     $("#reject_call_btn").on('click', function(e) {
       $("#call_confirtmation").modal("hide")
       stopReciveCallSound()
-      socket.emit("reject-call", {
+      /*socket.emit("reject-call", {
         to: data.socket
       });
+      */
     })
 
     //: when a stream is detected in the call
-    call.on('stream', function(stream) {
-      console.log(stream)
+    call_audio.on('stream', function(stream) {
       remoteStream_audio = stream;
       document.getElementById("remote-audio").srcObject = stream;
+    });
+
+    call_audio.on('close', function() {
+      console.log("Media connection has been closed")
+      disconnect_from_call()
     });
 
     //: Show the dialog
@@ -708,10 +707,8 @@ function addPeerjsEvents() {
     playReciveCallSound();
   });
 
-
-
   peer_video.on('connection', function(conn) {
-    data_connection_video = conn;
+    conn_video = conn;
     console.log("new connection")
     console.log(conn)
     conn.on('data', function(data) {
@@ -789,8 +786,8 @@ function addClickEvents() {
   $("#connect_btn").on('click', function(e) {
     if ($("#display_name").val() != "") {
       $('#displayname_modal').modal('hide')
-      display_name = $("#display_name").val()
-      window.api.request("set_display_name", display_name)
+      user.display_name = $("#display_name").val()
+      window.api.request("set_display_name", user.display_name)
       $("#main").show()
       connectToNetwork();
     } else {
@@ -799,12 +796,10 @@ function addClickEvents() {
   })
 
   $("#disconnect_btn").on('click', function(e) {
-    console.log("disconnecting from call")
     disconnect_from_call();
   })
 
   $("#mute_btn").on('click', function() {
-    console.log("clicked 1")
     muted = !muted;
     if (muted) {
       $("#mute_btn").addClass('centerButton_active');
@@ -825,6 +820,10 @@ function addClickEvents() {
     window.api.open_link_in_browser(this.href)
   });
 
+  $("#disconnect_btn").on('click', function(e) {
+    disconnect_from_call();
+  })
+
 }
 
 function addSubmitEvent() {
@@ -839,6 +838,7 @@ function addSubmitEvent() {
         });
         messageHandler(user, message, true)
       } else {
+        //: Sends the message to the user
         socket.emit('send-to-user', {
           message: message,
           to: user_page.socket_id
@@ -855,6 +855,31 @@ function addClientBackendEvents() {
     user = arg;
     console.log("User Data:")
     console.log(user)
+
+    //: Sets a costom server ip if one is defined.
+    if(user.server_ip4 != undefined){
+      server_address = user.server_ip4;
+    }
+
+    peerjs_host = server_address;
+    peer = new Peer({
+      host: peerjs_host,
+      port: peerjs_port,
+      path: '/myapp'
+    });
+
+    peer_video = new Peer({
+      host: peerjs_host,
+      port: peerjs_port,
+      path: '/myapp'
+    });
+      addPeerjsEvents()
+
+    socket_host = `http://${server_address}`;
+    socket = io(socket_host + ':' + socket_port);
+    addSocketEvents()
+
+
     if (user.display_name == undefined) {
       $('#displayname_modal').modal('show')
     } else {
@@ -888,8 +913,6 @@ $(document).ready(function() {
   $("#user-page").hide()
 
 
-  addSocketEvents()
-  addPeerjsEvents()
   addClickEvents()
   addClientBackendEvents()
   addSubmitEvent()

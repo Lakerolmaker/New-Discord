@@ -92,50 +92,31 @@ body {
 
 #user_header_btns {
   float: right;
-  width: 50%;
   height: 100%;
 }
 
-#user_header_call_user_btn {
-  float: left;
+#user_header_btns div{
+  float: right;
   padding-right: 10px;
 }
 
-#user_header_call_user_btn svg {
+
+#user_header_btns svg {
   color: white;
 }
 
-#user_header_call_user_btn:hover * {
+#user_header_btns div:hover * {
   color: #8e8e8e;
   cursor: pointer;
 }
 
-#user_header_call_user_btn:active * {
+#user_header_btns div:active * {
   border-width: 1px;
   border: 1px #cecdcd;
   border-style: groove;
   border-radius: 10px;
 }
 
-#user_header_call_user_video_btn {
-  float: left;
-}
-
-#user_header_call_user_video_btn svg {
-  color: white;
-}
-
-#user_header_call_user_video_btn:hover * {
-  color: #8e8e8e;
-  cursor: pointer;
-}
-
-#user_header_call_user_video_btn:active * {
-  border-width: 1px;
-  border: 1px #cecdcd;
-  border-style: groove;
-  border-radius: 10px;
-}
 
 .chat-input {
   background: var(--background-primary);
@@ -203,16 +184,16 @@ body {
 .preview_img_small {
   width: 80px;
   height: 80px;
-  margin-bottom:5px;
+  margin-bottom: 5px;
 }
 
 .preview_img_large {
   width: 50%;
   margin-right: 50%;
-  margin-bottom:5px;
+  margin-bottom: 5px;
 }
 
-.preview_site_name{
+.preview_site_name {
   margin-top: 5px;
 }
 
@@ -235,9 +216,13 @@ body {
   border-radius: 50%;
 }
 
+.user_display_name {
+  color: white;
+}
+
 .small_avatar {
   padding: 5px;
-  margin-top: 4px;
+  margin-top: 5px;
 }
 
 .active-users-panel {

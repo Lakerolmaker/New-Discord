@@ -28,6 +28,7 @@ console.log("Hewwo Uwu")
 console.log("Version: " + version);
 
 
+
 if (isDev) {
   console.log('Running in development');
 } else {
@@ -65,6 +66,10 @@ app.once('ready', () => {
 
   autoUpdater.checkForUpdatesAndNotify();
 
+
+  addIpc()
+  //startPostServer()
+
   let {
     width,
     height
@@ -82,7 +87,7 @@ app.once('ready', () => {
 
     minHeight: 650,
 
-    minWidth: 1100,
+    minWidth: 500,
 
     frame: true,
 
@@ -141,104 +146,124 @@ app.once('ready', () => {
 })
 
 
+function addIpc() {
 
-ipcMain.on('set_display_name', (event, arg) => {
-  store.set('display_name', arg);
-});
-
-ipcMain.on('add_friend', (event, arg) => {
-  friendList.push(arg);
-  store.set('friendList', friendList);
-});
-
-ipcMain.on('remove_friend', (event, arg) => {
-  friendList = friendList.filter(id => id != arg);
-  store.set('friendList', friendList);
-});
-
-ipcMain.on('get_user_info', (event, arg) => {
-  let user = {};
-  user.mac_id = mac_address;
-  user.display_name = store.get("display_name")
-  user.avatar_url = store.get("avatar_url")
-  if (!user.avatar_url) {
-    user.avatar_url = "img/avatar.jpg";
-  }
-  user.friendList = store.get("friendList") || []
-  event.reply('recive_user_info', user)
-})
-
-ipcMain.on('upload_image', (event, arg) => {
-  imgur.uploadFile(arg)
-    .then(function(json) {
-      store.set('avatar_url', json.data.link);
-      event.reply("get_avatar_url", json.data.link)
-    })
-    .catch(function(err) {
-      console.error(err.message);
-    });
-});
-
-ipcMain.on('send_notification', (event, arg) => {
-  if (!isInFocus) {
-    new Notification({
-      title: arg.title,
-      body: arg.body,
-    }).show()
-  }
-});
-
-ipcMain.on('get_web_data', (event, arg) => {
-  getLinkPreview.getLinkPreview(arg.message).then(data => {
-    arg.web_data = data;
-    event.reply('get_web_data', arg)
-  }).catch(error => {
-    event.reply('get_web_data', arg)
+  ipcMain.on('set_display_name', (event, arg) => {
+    store.set('display_name', arg);
   });
-});
+
+  ipcMain.on('add_friend', (event, arg) => {
+    friendList.push(arg);
+    store.set('friendList', friendList);
+  });
+
+  ipcMain.on('remove_friend', (event, arg) => {
+    friendList = friendList.filter(id => id != arg);
+    store.set('friendList', friendList);
+  });
+
+  ipcMain.on('get_user_info', (event, arg) => {
+    let user = {};
+    user.mac_id = mac_address;
+    user.display_name = store.get("display_name")
+    user.avatar_url = store.get("avatar_url")
+    user.server_ip4 = store.get('server_ip4');
+    user.socket_port = store.get('socket_port');
+    user.peerjs_port = store.get('peerjs_port');
 
 
-ipcMain.on('open_music_player', (event, arg) => {
-  music_player = new BrowserWindow({
-    // Set the initial width to 400px
-    width: 305,
-    // Set the initial height to 500px
-    height: 555,
-    // Don't show the window until it ready, this prevents any white flickering
-    show: true,
-    // Don't allow the window to be resized.
-    resizable: false,
-
-    frame: false,
-
-    webPreferences: {
-      nodeIntegration: false, // is default value after Electron v5
-      contextIsolation: true, // protect against prototype pollution
-      enableRemoteModule: false, // turn off remote
+    if (!user.avatar_url) {
+      user.avatar_url = "img/avatar.jpg";
     }
-
+    user.friendList = store.get("friendList") || []
+    event.reply('recive_user_info', user)
   })
 
-  // Load a URL in the window to the local index.html path
-  music_player.loadURL(url.format({
-    pathname: path.join(__dirname, 'music_player/index.html'),
-    protocol: 'file:',
-    slashes: true
-  }))
-
-  // Show window when page is ready
-  music_player.once('ready-to-show', () => {
-    //window.maximize()
-    music_player.setMenuBarVisibility(false)
-    music_player.show()
-  })
-
-  music_player.on('resize', () => {
-    let {
-      width,
-      height
-    } = music_player.getBounds();
-    console.log("width:" + width + " height:" + height)
+  ipcMain.on('upload_image', (event, arg) => {
+    imgur.uploadFile(arg)
+      .then(function(json) {
+        store.set('avatar_url', json.data.link);
+        event.reply("get_avatar_url", json.data.link)
+      })
+      .catch(function(err) {
+        console.error(err.message);
+      });
   });
 
-})
+  ipcMain.on('send_notification', (event, arg) => {
+    if (!isInFocus) {
+      new Notification({
+        title: arg.title,
+        body: arg.body,
+      }).show()
+    }
+  });
+
+  ipcMain.on('set_server_ip4', (event, arg) => {
+    store.set('server_ip4', arg);
+  });
+
+  ipcMain.on('set_socket_port', (event, arg) => {
+    store.set('socket_port', arg);
+  });
+
+  ipcMain.on('set_peerjs_port', (event, arg) => {
+    store.set('peerjs_port', arg);
+  });
+
+  ipcMain.on('get_web_data', (event, arg) => {
+    getLinkPreview.getLinkPreview(arg.message).then(data => {
+      arg.web_data = data;
+      event.reply('get_web_data', arg)
+    }).catch(error => {
+      event.reply('get_web_data', arg)
+    });
+  });
+
+
+  ipcMain.on('open_music_player', (event, arg) => {
+    music_player = new BrowserWindow({
+      // Set the initial width to 400px
+      width: 305,
+      // Set the initial height to 500px
+      height: 555,
+      // Don't show the window until it ready, this prevents any white flickering
+      show: true,
+      // Don't allow the window to be resized.
+      resizable: false,
+
+      frame: false,
+
+      webPreferences: {
+        nodeIntegration: false, // is default value after Electron v5
+        contextIsolation: true, // protect against prototype pollution
+        enableRemoteModule: false, // turn off remote
+      }
+
+    })
+
+    // Load a URL in the window to the local index.html path
+    music_player.loadURL(url.format({
+      pathname: path.join(__dirname, 'music_player/index.html'),
+      protocol: 'file:',
+      slashes: true
+    }))
+
+    // Show window when page is ready
+    music_player.once('ready-to-show', () => {
+      //window.maximize()
+      music_player.setMenuBarVisibility(false)
+      music_player.show()
+    })
+
+    music_player.on('resize', () => {
+      let {
+        width,
+        height
+      } = music_player.getBounds();
+      console.log("width:" + width + " height:" + height)
+    });
+
+  })
+
+}
