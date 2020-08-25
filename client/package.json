@@ -4,7 +4,7 @@
   "author": "Lakerolmaker",
   "description": " an imitation of discord",
   "platform": "win32",
-  "version": "1.1.2",
+  "version": "1.1.5",
   "main": "app/app.js",
   "repository": "https://github.com/Lakerolmaker/New-Discord",
   "build": {
