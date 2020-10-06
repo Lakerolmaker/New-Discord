@@ -25,7 +25,7 @@
     "release": "yarn electron-builder --publish always"
   },
   "devDependencies": {
-    "electron": "9.0.4",
+    "electron": "9.3.0",
     "electron-builder": "^22.7.0"
   },
   "dependencies": {
