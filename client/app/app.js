@@ -28,7 +28,6 @@ console.log("Hewwo Uwu")
 console.log("Version: " + version);
 
 
-
 if (isDev) {
   console.log('Running in development');
 } else {
